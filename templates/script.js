@@ -510,7 +510,6 @@ function draw4() {
 const recordBtn = document.querySelector(".record");
 let audioChunk = [];
 let isRecording = false;
-let first=false;
 let recorder, recStream;
 let audioRecCtx = new (AudioContext || webkitAudioContext)();
 let recAnalyser = audioRecCtx.createAnalyser(); 
@@ -585,16 +584,6 @@ recordBtn.addEventListener("click", async () => {
 		console.log(audioChunk);
 		console.log(recStream.getTracks());
 	}
-
-	// if(!first){
-	// 	currAnalyser=recAnalyser;
-	// 	currStream=recStream;
-	// 	draw();
-	// 	draw2();
-	// 	//draw3();
-	// 	draw4();
-	// 	first=false;
-	// }
 });
 
 
