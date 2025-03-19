@@ -13,11 +13,14 @@ const bgcolor = getComputedStyle(document.documentElement).getPropertyValue('--b
 const audioCtx = new (AudioContext || webkitAudioContext)();
 // const songid = document.getElementById('songid');
 const stream = document.querySelector("#audioElement");
-// stream.src = `./audio/aud${songid.value}.wav`;
-// songid.addEventListener("keyup", () => {
-// 	stream.src = `./audio/aud${songid.value}.wav`;
 
-// });
+stream.src = `./audio/aud${songid.value}.wav`;
+songid.addEventListener("keyup", () => {
+	stream.src = `./audio/aud${songid.value}.wav`;
+
+});
+const playBtn = document.getElementById("play");
+
 
 
 
@@ -67,9 +70,28 @@ function fletcherMunsonWeight(frequency) {
 
 const analyser = audioCtx.createAnalyser();
 const sampleRate = audioCtx.sampleRate;
-// const source = audioCtx.createMediaElementSource(stream);
-// source.connect(analyser);
-// source.connect(audioCtx.destination);
+
+const source = audioCtx.createMediaElementSource(stream);
+source.connect(analyser);
+source.connect(audioCtx.destination);
+
+
+playBtn.addEventListener("click", () => {
+	if (audioCtx.state === "suspended") {
+		audioCtx.resume();
+	}
+  
+
+	if (playBtn.dataset.playing === "false") {
+		audioElement.play();
+		playBtn.dataset.playing = "true";
+	} else if (playBtn.dataset.playing === "true") {
+		audioElement.pause();
+		playBtn.dataset.playing = "false";
+	}
+})
+
+
 analyser.fftSize = 256;
 const noOfBars = analyser.fftSize / 128;
 const bufferLength = analyser.frequencyBinCount;
@@ -568,23 +590,15 @@ recordBtn.addEventListener("click", async () => {
 		console.log(recStream.getTracks());
 	}
 
-	if(!first){
-		currAnalyser=recAnalyser;
-		currStream=recStream;
-		draw();
-		draw2();
-		//draw3();
-		draw4();
-		first=false;
-	}
 });
 
 
-// window.addEventListener('load', () => {
-// 	currAnalyser=recAnalyser;
-// 	currStream=recStream;
-// 	draw();
-// 	draw2();
-// 	//draw3();
-// 	draw4();
-// });
+window.addEventListener('load', () => {
+	currAnalyser=analyser;
+	currStream=stream;
+	draw();
+	draw2();
+	//draw3();
+	draw4();
+});
+
