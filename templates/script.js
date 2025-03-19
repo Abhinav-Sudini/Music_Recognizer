@@ -1,6 +1,6 @@
 let currStream;
 let currAnalyser;
-
+const bgcolor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
 
 /*
  █████╗ ██╗   ██╗██████╗ ██╗ ██████╗     ██╗   ██╗██╗███████╗██╗   ██╗ █████╗ ██╗     ██╗███████╗███████╗██████╗ 
@@ -14,11 +14,11 @@ const audioCtx = new (AudioContext || webkitAudioContext)();
 const songid = document.getElementById('songid');
 const stream = document.querySelector("#audioElement");
 stream.src = `./audio/aud${songid.value}.wav`;
-const bgcolor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
 songid.addEventListener("keyup", () => {
 	stream.src = `./audio/aud${songid.value}.wav`;
 
 });
+const playBtn = document.getElementById("play");
 
 
 
@@ -71,6 +71,23 @@ const sampleRate = audioCtx.sampleRate;
 const source = audioCtx.createMediaElementSource(stream);
 source.connect(analyser);
 source.connect(audioCtx.destination);
+
+
+playBtn.addEventListener("click", () => {
+	if (audioCtx.state === "suspended") {
+		audioCtx.resume();
+	}
+  
+
+	if (playBtn.dataset.playing === "false") {
+		audioElement.play();
+		playBtn.dataset.playing = "true";
+	} else if (playBtn.dataset.playing === "true") {
+		audioElement.pause();
+		playBtn.dataset.playing = "false";
+	}
+})
+
 analyser.fftSize = 256;
 const noOfBars = analyser.fftSize / 128;
 const bufferLength = analyser.frequencyBinCount;
@@ -132,15 +149,11 @@ HEIGHT = canvas2.height;
 const canvasCtx2 = canvas2.getContext('2d');
 
 canvas2.addEventListener('click', () => {
-	//stream.play();
 	console.log(dataArray2, scaledDataArray2, FMArray);
 	console.log(((Date.now()) / 500));
 	
 })
 
-stream.play().catch(error => {
-    console.error("Playback failed:", error);
-});
 
 // for (let i = 0; i < range; i++) {
 // 	const startFreq = Math.floor(Math.exp(logStep*i));
@@ -483,15 +496,6 @@ function draw4() {
 
 }
 
-window.addEventListener('load', () => {
-	currAnalyser=analyser;
-	currStream=stream;
-	draw();
-	draw2();
-	//draw3();
-	draw4();
-})
-
 
 
 /*
@@ -506,8 +510,11 @@ window.addEventListener('load', () => {
 const recordBtn = document.querySelector(".record");
 let audioChunk = [];
 let isRecording = false;
+let first=false;
 let recorder, recStream;
-let audioRecCtx, recAnalyser, recSource;
+let audioRecCtx = new (AudioContext || webkitAudioContext)();
+let recAnalyser = audioRecCtx.createAnalyser(); 
+let recSource;
 let recBlob, recUrl, recAudio;
 //console.log(recordBtn.outerHTML);
 
@@ -522,7 +529,7 @@ recordBtn.addEventListener("click", async () => {
 
 
 		audioRecCtx = new (AudioContext || webkitAudioContext)();
-		recAnalyser = audioRecCtx.createAnalyser()
+		recAnalyser = audioRecCtx.createAnalyser();
 		recSource = audioRecCtx.createMediaStreamSource(recStream);
 		recSource.connect(recAnalyser);
 		recSource.connect(audioRecCtx.destination);
@@ -559,7 +566,7 @@ recordBtn.addEventListener("click", async () => {
 			
 			recAudio.addEventListener("start", () => console.log("Recording playing starts"));
 			recAudio.addEventListener("ended", () => console.log("Recording playing ended"));
-			recAudio.play();
+			//recAudio.play();
 		}
 
 		
@@ -578,4 +585,24 @@ recordBtn.addEventListener("click", async () => {
 		console.log(audioChunk);
 		console.log(recStream.getTracks());
 	}
+
+	// if(!first){
+	// 	currAnalyser=recAnalyser;
+	// 	currStream=recStream;
+	// 	draw();
+	// 	draw2();
+	// 	//draw3();
+	// 	draw4();
+	// 	first=false;
+	// }
+});
+
+
+window.addEventListener('load', () => {
+	currAnalyser=analyser;
+	currStream=stream;
+	draw();
+	draw2();
+	//draw3();
+	draw4();
 });
