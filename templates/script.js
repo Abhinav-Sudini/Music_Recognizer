@@ -11,8 +11,9 @@ const bgcolor = getComputedStyle(document.documentElement).getPropertyValue('--b
 ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝       ╚═══╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
 */
 const audioCtx = new (AudioContext || webkitAudioContext)();
-const songid = document.getElementById('songid');
+// const songid = document.getElementById('songid');
 const stream = document.querySelector("#audioElement");
+
 stream.src = `./audio/aud${songid.value}.wav`;
 songid.addEventListener("keyup", () => {
 	stream.src = `./audio/aud${songid.value}.wav`;
@@ -22,10 +23,11 @@ const playBtn = document.getElementById("play");
 
 
 
-stream.addEventListener("ended", () => {
-	dataArray2.fill(0);
-	dataArray.fill(128);
-})
+
+// stream.addEventListener("ended", () => {
+// 	dataArray2.fill(0);
+// 	dataArray.fill(128);
+// })
 
 function rollingAverage(dataArray, m) {
 	const n = dataArray.length;
@@ -68,6 +70,7 @@ function fletcherMunsonWeight(frequency) {
 
 const analyser = audioCtx.createAnalyser();
 const sampleRate = audioCtx.sampleRate;
+
 const source = audioCtx.createMediaElementSource(stream);
 source.connect(analyser);
 source.connect(audioCtx.destination);
@@ -87,6 +90,7 @@ playBtn.addEventListener("click", () => {
 		playBtn.dataset.playing = "false";
 	}
 })
+
 
 analyser.fftSize = 256;
 const noOfBars = analyser.fftSize / 128;
@@ -510,6 +514,7 @@ function draw4() {
 const recordBtn = document.querySelector(".record");
 let audioChunk = [];
 let isRecording = false;
+let first=false;
 let recorder, recStream;
 let audioRecCtx = new (AudioContext || webkitAudioContext)();
 let recAnalyser = audioRecCtx.createAnalyser(); 
@@ -584,6 +589,7 @@ recordBtn.addEventListener("click", async () => {
 		console.log(audioChunk);
 		console.log(recStream.getTracks());
 	}
+
 });
 
 
@@ -595,3 +601,4 @@ window.addEventListener('load', () => {
 	//draw3();
 	draw4();
 });
+
