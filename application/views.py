@@ -4,6 +4,7 @@ from .models import song,user_file,fingerprint
 from .form import DocumentForm
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
+from itertools import islice
 #for loading and visualizing audio files
 from django.db import connection
 from queue import Queue
@@ -19,45 +20,51 @@ def find_hash(path):
 
     length = len(peaks)
     hashes = []
-    print(peaks[10],"peak")
+    print(peaks[10],"peak len ",length)
 
-    for i in range(length-200):
-        for col in range(len(peaks[0])-1):
-            for j in range(198,200):
-               for col_nex in range(len(peaks[0])-1):
-                    str_fq = str(peaks[i][col]) 
-                    str_fq += str(peaks[i+j][col_nex])
-                    str_fq += str(j)
-                    gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-                    hashes.append(gen_hash)
+    # for i in range(length-10):
+    #     for col in range(len(peaks[0])-1):
+    #         for j in range(1,10):
+    #            for col_nex in range(len(peaks[0])-1):
+    #                 str_fq = str(peaks[i][col]) 
+    #                 str_fq += str(peaks[i+j][col_nex])
+    #                 str_fq += str(j)
+    #                 gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
+    #                 hashes.append(gen_hash)
 
 
     
-    # for index in range(length):
-    #     range_ = [40,80,120,180,500,1200,3000,8000,2000000]
-    #     pt = 0
-    #     temp = []
-    #     fuz_fac = [5,7,9,11,15,20,35,50,60]
-    #     for k in peaks[index]:
-    #         temp.append((k - k%(fuz_fac[pt])))
-    #         pt+=1
+    for index in range(length):
+        pt = 0
+        temp = []
+        fuz_fac = [1,2,3,5,10,20,35,50,60]
+        for k in peaks[index]:
+            temp.append((k))
+            pt+=1
         
-    #     str_fq = str(sorted(list(temp[:-1])))
-    #     # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
+        str_fq = str(sorted(list(temp[:-1])))
+        gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
+        hashes.append(gen_hash)
+        # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
         
 
+    print("before hash len ",len(hashes))
 
     return hashes
 
 def add_to_db(path,new_song):
 
     hashes = find_hash(path)
-    
-    hashset = set(hashes)
+    hashset = hashes
     print("need to add ",len(hashset))
-    for hsh in hashset:
-        new = fingerprint(hash=hsh,offset=0,song_id=new_song)
-        new.save()
+    batch_size = 500
+    objs = (fingerprint(hash=hsh,offset=0,song_id=new_song) for hsh in hashset)
+    while True:
+        batch = list(islice(objs, batch_size))
+        if not batch:
+            break
+        fingerprint.objects.bulk_create(batch, batch_size)
+
     print("added - ",len(hashset))
 
 
@@ -154,7 +161,8 @@ def my_view(request):
 
 def find_pe(X,nfft,SR):
     freqs = librosa.fft_frequencies(sr=SR,n_fft=nfft)
-    ranges = [80,180,1200,8000,2000000]
+    ranges = [40,80,120,180,300,2000,2000000]
+    fuz_fac = [1,1,2,2,3,5,10,15,20]
     peak = [0 for j in range(len(ranges))]
     pt = 0
     index = 0
@@ -164,7 +172,9 @@ def find_pe(X,nfft,SR):
         if X[peak[pt]] < X[index]:
             peak[pt] = index
         index+=1
-    
+    for i in range(len(peak)):
+        peak[i] = peak[i] - peak[i]%fuz_fac[i]
+
     return peak
 
 
@@ -172,7 +182,6 @@ def find_peak_fq(audio_path):
 
     x, sr = librosa.load(audio_path,sr=44100)
 
-    print(x.shape)
 
     X = librosa.stft(x,n_fft=8192)
     Xdb = (abs(X))
