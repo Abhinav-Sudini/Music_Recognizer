@@ -531,7 +531,7 @@ recordBtn.addEventListener("click", async () => {
 		recAnalyser = audioRecCtx.createAnalyser();
 		recSource = audioRecCtx.createMediaStreamSource(recStream);
 		recSource.connect(recAnalyser);
-		recSource.connect(audioRecCtx.destination);
+		//recSource.connect(audioRecCtx.destination);
 
 
 		currAnalyser = recAnalyser;
