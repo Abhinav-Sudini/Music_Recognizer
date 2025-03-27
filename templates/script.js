@@ -74,16 +74,11 @@ source.connect(audioCtx.destination);
 
 
 playBtn.addEventListener("click", () => {
-	if (audioCtx.state === "suspended") {
-		audioCtx.resume();
-	}
-  
-
 	if (playBtn.dataset.playing === "false") {
-		audioElement.play();
+		stream.play();
 		playBtn.dataset.playing = "true";
 	} else if (playBtn.dataset.playing === "true") {
-		audioElement.pause();
+		stream.pause();
 		playBtn.dataset.playing = "false";
 	}
 })
@@ -588,6 +583,9 @@ recordBtn.addEventListener("click", async () => {
 
 
 window.addEventListener('load', () => {
+	if (audioCtx.state === "suspended") {
+		audioCtx.resume();
+	}
 	currAnalyser=analyser;
 	currStream=stream;
 	draw();
