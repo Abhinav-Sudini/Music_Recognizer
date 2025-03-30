@@ -104,7 +104,7 @@ def test(request):
     return HttpResponse("done bro")
 
 def find_song(path):
-    hash_set = set(find_hash("./media/user/"+path))
+    hash_set = find_hash("./media/user/"+path)
     str_hash = str(hash_set)
     str_hash = str_hash[1:-1]
 
@@ -121,7 +121,7 @@ def find_song(path):
         print(cursor.fetchall())
 
 def idk(request):
-    paths = ["song1_c.wav","song1_m.wav","song1_ml.wav","song2_sc.wav","song2_m.wav","song3_m.wav"]
+    paths = ["song1_c.wav","song1_m.wav","song1_ml.wav","song1_mll.wav","song2_sc.wav","song2_m.wav","song3_m.wav","song4_ml.wav"]
 
     for path in paths:
         print(path,".............")
@@ -161,8 +161,8 @@ def my_view(request):
 
 def find_pe(X,nfft,SR):
     freqs = librosa.fft_frequencies(sr=SR,n_fft=nfft)
-    ranges = [40,80,120,180,300,2000,2000000]
-    fuz_fac = [1,1,2,2,3,5,10,15,20]
+    ranges = [20,40,80,120,180,300,800,2000,2000000]
+    fuz_fac = [2,2,3,3,3,4,4,4,4,5,5,5,10]
     peak = [0 for j in range(len(ranges))]
     pt = 0
     index = 0
@@ -173,7 +173,7 @@ def find_pe(X,nfft,SR):
             peak[pt] = index
         index+=1
     for i in range(len(peak)):
-        peak[i] = peak[i]
+        peak[i] = peak[i] - (peak[i]%fuz_fac[i])
 
     return peak
 
