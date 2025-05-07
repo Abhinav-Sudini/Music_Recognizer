@@ -24,40 +24,40 @@ def find_hash(path):
     print(peaks[0:5])
     print(peaks[10],"peak len ",length)
 
-    for i in range(length-10):
-        for col in range(len(peaks[i])):
-            num_added = 0
-            for j in range(0,10):
-                for col_nex in range(len(peaks[i+j])):
-                    if j==0 and col==col_nex:
-                        continue
+    # for i in range(length-10):
+    #     for col in range(len(peaks[i])):
+    #         num_added = 0
+    #         for j in range(0,10):
+    #             for col_nex in range(len(peaks[i+j])):
+    #                 if j==0 and col==col_nex:
+    #                     continue
 
-                    str_fq = str(peaks[i][col]) 
-                    str_fq += str(peaks[i+j][col_nex])
-                    str_fq += str(j)
-                    # gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-                    gen_hash = peaks[i][col]*1000000 + peaks[i+j][col_nex]*1000 + j
-                    hashes.append((gen_hash,i))
-                    num_added+=1
+    #                 str_fq = str(peaks[i][col]) 
+    #                 str_fq += str(peaks[i+j][col_nex])
+    #                 str_fq += str(j)
+    #                 # gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
+    #                 gen_hash = peaks[i][col]*1000000 + peaks[i+j][col_nex]*1000 + j
+    #                 hashes.append((gen_hash,i))
+    #                 num_added+=1
 
-                    if num_added>3:
-                        break
+    #                 if num_added>3:
+    #                     break
 
-                if num_added>3:
-                    break
+    #             if num_added>3:
+    #                 break
 
     
-    # for index in range(length):
-    #     pt = 0
-    #     temp = []
-    #     fuz_fac = [1,2,3,5,10,20,35,50,60]
-    #     for k in peaks[index]:
-    #         temp.append((k))
-    #         pt+=1
+    for index in range(length):
+        pt = 0
+        temp = []
+        fuz_fac = [1,2,3,5,10,20,35,50,60]
+        for k in peaks[index]:
+            temp.append((k))
+            pt+=1
         
-    #     str_fq = str(sorted(list(temp[:-1])))
-    #     gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-    #     hashes.append(gen_hash)
+        str_fq = str(sorted(list(temp[:-1])))
+        gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
+        hashes.append((gen_hash,index))
         # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
         
 
@@ -123,41 +123,43 @@ def find_song(path):
     str_hash = str(hash_set)
     str_hash = str_hash[1:-1]
 
-#     query = """
-#     SELECT count(*) as cnt,song_id_id 
-#     FROM test.application_fingerprint 
-#     WHERE hash in ( %s ) 
-#     group by song_id_id
-#     order by count(*) desc;
-# """ % str_hash
-    top_song = {}
+    query = """
+    SELECT count(*) as cnt,song_id_id 
+    FROM test.application_fingerprint 
+    WHERE hash in ( %s ) 
+    group by song_id_id
+    order by count(*) desc;
+""" % str_hash
+    top_song = execute_sql(query)
+
     print("total hsh", len(hashs))
-    for song_id in range(4):
-        query = """
-            SELECT hash, offset
-            FROM test.application_fingerprint 
-            WHERE hash in ( %s ) and song_id_id = %s order by offset;
-        """ % (str_hash,song_id)
+    # for song_id in range(4):
+    #     query = """
+    #         SELECT hash, offset
+    #         FROM test.application_fingerprint 
+    #         WHERE hash in ( %s ) and song_id_id = %s order by offset;
+    #     """ % (str_hash,song_id)
 
-        matched_hsh = execute_raw_sql(query)
+    #     matched_hsh = execute_raw_sql(query)
 
-        length = len(matched_hsh)
-        coherence_score=0
-        print(matched_hsh[0:5])
-        for i in range(length-10):
-            hsh1,off1 =  matched_hsh[i]
-            for j in range(1,5):
-                hsh2,off2 = matched_hsh[i+j]
-                user_off1 = hash_dict[hsh1]
-                user_off2 = hash_dict[hsh2]
+    #     length = len(matched_hsh)
+    #     coherence_score=0
+    #     print(matched_hsh[0:10])
+    #     for i in range(length-10):
+    #         hsh1,off1 =  matched_hsh[i]
+    #         for j in range(1,5):
+    #             hsh2,off2 = matched_hsh[i+j]
+    #             user_off1 = hash_dict[hsh1]
+    #             user_off2 = hash_dict[hsh2]
 
-                dif_offeset = abs(off2-off1)
+    #             dif_offeset = abs(off2-off1)
 
-                if abs(dif_offeset - SmallestDifference(user_off1,user_off2))==0:
-                    coherence_score+=1
+    #             if abs(dif_offeset - SmallestDifference(user_off1,user_off2))==0:
+    #                 coherence_score+=1
 
-        top_song[song_id] = coherence_score
+    #     top_song[song_id] = coherence_score
 
+    
 
     print(top_song)
     return top_song
