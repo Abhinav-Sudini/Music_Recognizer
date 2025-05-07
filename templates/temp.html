@@ -1,0 +1,12 @@
+{% if songs %}
+        {% for s_name,data in songs.items %}
+            
+        <h1>{{s_name}}</h1>
+        <h2>{{data.cnt}}</h2>   
+        <h3>{{data.song_id_id}}</h3>
+        <h4>{{data}}</h4>
+
+            
+
+        {% endfor %}
+{% endif %}

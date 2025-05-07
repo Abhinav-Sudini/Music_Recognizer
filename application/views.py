@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from itertools import islice
 #for loading and visualizing audio files
 from django.db import connection
+from .functions import *
 from queue import Queue
 import xxhash
 import numpy as np
@@ -20,18 +21,30 @@ def find_hash(path):
 
     length = len(peaks)
     hashes = []
+    print(peaks[0:5])
     print(peaks[10],"peak len ",length)
 
     # for i in range(length-10):
-    #     for col in range(len(peaks[0])-1):
-    #         for j in range(1,10):
-    #            for col_nex in range(len(peaks[0])-1):
+    #     for col in range(len(peaks[i])):
+    #         num_added = 0
+    #         for j in range(0,10):
+    #             for col_nex in range(len(peaks[i+j])):
+    #                 if j==0 and col==col_nex:
+    #                     continue
+
     #                 str_fq = str(peaks[i][col]) 
     #                 str_fq += str(peaks[i+j][col_nex])
     #                 str_fq += str(j)
-    #                 gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-    #                 hashes.append(gen_hash)
+    #                 # gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
+    #                 gen_hash = peaks[i][col]*1000000 + peaks[i+j][col_nex]*1000 + j
+    #                 hashes.append((gen_hash,i))
+    #                 num_added+=1
 
+    #                 if num_added>3:
+    #                     break
+
+    #             if num_added>3:
+    #                 break
 
     
     for index in range(length):
@@ -44,7 +57,7 @@ def find_hash(path):
         
         str_fq = str(sorted(list(temp[:-1])))
         gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-        hashes.append(gen_hash)
+        hashes.append((gen_hash,index))
         # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
         
 
@@ -58,7 +71,7 @@ def add_to_db(path,new_song):
     hashset = hashes
     print("need to add ",len(hashset))
     batch_size = 500
-    objs = (fingerprint(hash=hsh,offset=0,song_id=new_song) for hsh in hashset)
+    objs = (fingerprint(hash=hsh,offset=off,song_id=new_song) for hsh,off in hashset)
     while True:
         batch = list(islice(objs, batch_size))
         if not batch:
@@ -99,35 +112,90 @@ def test(request):
     # new.singer = "xy"
     # new.song_name = "xyz"
     # new.save()
-    new = fingerprint(hash=hsh,offset=0,song_id=new_song)
-    new.save()
+    # new = fingerprint(hash=hsh,offset=0,song_id=new_song)
+    # new.save()
     return HttpResponse("done bro")
 
 def find_song(path):
-    hash_set = set(find_hash("./media/user/"+path))
+    hashs = find_hash("./media/user/"+path)
+    hash_dict = make_dict(hashs)
+    hash_set = [hsh for hsh,off in hashs]
     str_hash = str(hash_set)
     str_hash = str_hash[1:-1]
 
-    query = """
-    SELECT count(*),song_id_id 
-    FROM test.application_fingerprint 
-    WHERE hash in ( %s ) 
-    group by song_id_id
-    order by count(*) limit 5;
-""" % str_hash
+#     query = """
+#     SELECT count(*) as cnt,song_id_id 
+#     FROM test.application_fingerprint 
+#     WHERE hash in ( %s ) 
+#     group by song_id_id
+#     order by count(*) desc;
+# """ % str_hash
+    top_song = {}
 
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        print(cursor.fetchall())
+    print("total hsh", len(hashs))
+    for song_id in range(4):
+        query = """
+            SELECT hash, offset
+            FROM test.application_fingerprint 
+            WHERE hash in ( %s ) and song_id_id = %s order by offset;
+        """ % (str_hash,song_id)
+
+        matched_hsh = execute_raw_sql(query)
+
+        length = len(matched_hsh)
+        coherence_score=0
+        print(matched_hsh[0:10])
+        sum_offset = 0
+        temp_off = []
+        mini_off = 10000
+        for i in range(length-10):
+            hsh1,off1 =  matched_hsh[i]
+            for j in range(1,5):
+                hsh2,off2 = matched_hsh[i+j]
+                user_off1 = hash_dict[hsh1]
+                user_off2 = hash_dict[hsh2]
+
+                dif_offeset = abs(off2-off1)
+                flag = True
+                for u_off1 in user_off1:
+                    for u_off2 in user_off2:
+                        if u_off1<u_off2 and abs(dif_offeset-(u_off2-u_off1))<5:
+                            coherence_score+=1
+                            sum_offset+= off1
+                            mini_off = min(mini_off,off1)
+                            temp_off.append(off1)
+                            flag = False
+                            break
+                    if flag==False:
+                        break
+
+                # if abs(dif_offeset - SmallestDifference(user_off1,user_off2))<3:
+                #     coherence_score+=1
+
+        song_time = -1
+        if not coherence_score == 0:
+            song_time = sum_offset/coherence_score - len(hashs)/2
+
+        print(temp_off)
+        top_song[song_id] = (coherence_score,song_time*0.0463)
+
+    
+
+    print(top_song)
+    return top_song
 
 def idk(request):
-    paths = ["song1_c.wav","song1_m.wav","song1_ml.wav","song2_sc.wav","song2_m.wav","song3_m.wav"]
-
+    paths = ["song1_c.wav","song1_m.wav","song1_wec.wav","song1_ml.wav","song1_mll.wav","song1.wav","song2_sc.wav","song2_m.wav","song4_ml.wav","song4_webc.wav"]
+    temp = {}
     for path in paths:
         print(path,".............")
-        find_song(path)
-    
-    return HttpResponse("hi bro")
+        top_song = (find_song(path))
+        # top_song[song] =
+
+        temp[path] = top_song
+        print("top song" ,top_song)
+    print(temp)
+    return render(request, 'temp.html',{"songs":temp})
 
 def _delete_file(path):
     # Deletes file from filesystem.
@@ -161,8 +229,8 @@ def my_view(request):
 
 def find_pe(X,nfft,SR):
     freqs = librosa.fft_frequencies(sr=SR,n_fft=nfft)
-    ranges = [40,80,120,180,300,2000,2000000]
-    fuz_fac = [1,1,2,2,3,5,10,15,20]
+    ranges = [20,40,80,160,180,300,600,5000,2000000]
+    fuz_fac = [1,2,4,6,6,8,8,12,4,5,5,5,10]
     peak = [0 for j in range(len(ranges))]
     pt = 0
     index = 0
@@ -173,8 +241,8 @@ def find_pe(X,nfft,SR):
             peak[pt] = index
         index+=1
     for i in range(len(peak)):
-        peak[i] = peak[i] - peak[i]%fuz_fac[i]
-
+        peak[i] = peak[i] - (peak[i]%fuz_fac[i])
+        # peak[i] = peak[i] 
     return peak
 
 
