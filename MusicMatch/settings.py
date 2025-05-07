@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'application'
 ]
+STATIC_URL = "static/"
+STATICFILES_DIRS = ["C:/Users/sudin/OneDrive/all_code/IT_project/Music_Recognizer/media"]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

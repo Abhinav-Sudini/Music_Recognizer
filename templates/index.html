@@ -1,3 +1,6 @@
+{% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +8,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="{% static 'static/style.css' %}">
 </head>
 
 <body>
@@ -23,7 +26,7 @@
 	</div>
 	<button class="record">Record</button>
 	
-	<script src="script.js"></script>
+	<script src="{% static 'static/script.js' %}"></script>
 </body>
 
 </html>
