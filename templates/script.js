@@ -1,6 +1,7 @@
 let currStream;
 let currAnalyser;
 const bgcolor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
+const button = document.querySelector(".button_main");
 
 /*
  █████╗ ██╗   ██╗██████╗ ██╗ ██████╗     ██╗   ██╗██╗███████╗██╗   ██╗ █████╗ ██╗     ██╗███████╗███████╗██████╗ 
@@ -354,9 +355,6 @@ function draw4() {
 	const innerRadius = 70 + 20 * midFreqAvg(scaledDataArray2);
 	const minRadius = 2;
 	const outerRadius = 25;
-	canvasCtx4.shadowBlur = 15;
-
-	canvasCtx4.lineWidth = 2;
 
 	const now = Date.now();
 
@@ -365,6 +363,15 @@ function draw4() {
 	const g = (v) => { return 40 };
 	const b = (v) => { return 255 - v * 100; };
 	const shadowGlow = 20;
+
+	canvasCtx4.shadowBlur = 15;
+	canvasCtx4.beginPath();
+    canvasCtx4.arc(WIDTH4/2, HEIGHT4/2, innerRadius, 0, Math.PI * 2);
+	canvasCtx4.fillStyle = `rgb(23, 23, 23) `;
+    canvasCtx4.fill();
+	canvasCtx4.lineWidth = 2;
+
+	button.style.setProperty('--size', 2*innerRadius+"px");
 
 	const idleAnimation = (i, minRadius, fr) => {
 		return minRadius * (3 + (1.5 * Math.sin(((i) / fr + (now / 5000)) * Math.PI * 4)))
@@ -502,7 +509,7 @@ function draw4() {
 ╚═╝     ╚═╝╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
 */
 
-const recordBtn = document.querySelector(".record");
+const recordBtn = document.querySelector(".button_main");
 let audioChunk = [];
 let isRecording = false;
 let recorder, recStream;
@@ -522,8 +529,6 @@ recordBtn.addEventListener("click", async () => {
 		recorder = new MediaRecorder(recStream);
 
 
-		audioRecCtx = new (AudioContext || webkitAudioContext)();
-		recAnalyser = audioRecCtx.createAnalyser();
 		recSource = audioRecCtx.createMediaStreamSource(recStream);
 		recSource.connect(recAnalyser);
 		//recSource.connect(audioRecCtx.destination);
@@ -593,3 +598,73 @@ window.addEventListener('load', () => {
 	//draw3();
 	draw4();
 });
+
+/*
+███████╗ ██████╗██████╗ ███████╗███████╗███╗   ██╗    ██████╗ ███████╗ ██████╗ ██████╗ ██████╗ ██████╗ ██╗███╗   ██╗ ██████╗ 
+██╔════╝██╔════╝██╔══██╗██╔════╝██╔════╝████╗  ██║    ██╔══██╗██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝ 
+███████╗██║     ██████╔╝█████╗  █████╗  ██╔██╗ ██║    ██████╔╝█████╗  ██║     ██║   ██║██████╔╝██║  ██║██║██╔██╗ ██║██║  ███╗
+╚════██║██║     ██╔══██╗██╔══╝  ██╔══╝  ██║╚██╗██║    ██╔══██╗██╔══╝  ██║     ██║   ██║██╔══██╗██║  ██║██║██║╚██╗██║██║   ██║
+███████║╚██████╗██║  ██║███████╗███████╗██║ ╚████║    ██║  ██║███████╗╚██████╗╚██████╔╝██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝
+╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═══╝    ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+*/
+
+
+let mediaRecorder;
+let recordedChunks = [];
+
+const startBtn = document.getElementById('startBtn');
+
+const startAudioCapture = async () => {
+	console.log("START");
+	const stream = await navigator.mediaDevices.getDisplayMedia({
+		video: true,
+		audio: true
+	});
+
+	const audioTracks = stream.getAudioTracks();
+	const audioOnlyStream = new MediaStream(audioTracks);
+
+	const recorder = new MediaRecorder(audioOnlyStream);
+	const chunks = [];
+
+	recSource = audioRecCtx.createMediaStreamSource(stream);
+	recSource.connect(recAnalyser);
+
+	currAnalyser = recAnalyser;
+	currStream = stream;
+
+	recorder.ondataavailable = (e) => {
+		if (e.data.size > 0) chunks.push(e.data);
+	};
+
+	recorder.onstop = () => {
+		const blob = new Blob(chunks, { type: 'audio/webm' });
+		const url = URL.createObjectURL(blob);
+
+		// Create a download link
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'audio_recording.webm';
+		a.click();
+	};
+
+	recorder.start();
+
+	setTimeout(() => {
+		recorder.stop();
+		startBtn.innerHTML = "Record System Audio";
+		startBtn.disabled = false;
+		startBtn.style.setProperty('--after-display', 'block');
+		stream.getTracks().forEach(track => track.stop());
+		console.log("STOP");
+	}, 10000);
+
+};
+
+startBtn.onclick = async () => {
+	startBtn.innerHTML="Recording...";
+	startBtn.disabled = true;
+	startBtn.style.setProperty('--after-display', 'none');
+	startAudioCapture();
+}
+

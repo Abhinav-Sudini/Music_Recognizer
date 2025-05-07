@@ -12,9 +12,10 @@
 	--max-size: 30rem;
 
 	--bg-color: #222;
-	--gradient: linear-gradient(
+	/* --gradient: linear-gradient(
 		45deg, #FF0000, #FF7300, #FFFB00, #48FF00,
-		#00FFD5, #002BFF, #FF00C8, #FF0000);
+		#00FFD5, #002BFF, #FF00C8, #FF0000); */
+	--gradient: linear-gradient(45deg, #e74242, #002BFF, #FF00C8, #e74242);
 	--duaration: 10s;
 }
 
@@ -38,6 +39,13 @@ body {
 	column-gap: 0.5rem;
 }
 
+.container {
+	width: 600px;
+	height: 600px;
+	position: relative;
+	overflow: hidden;
+}
+
 .bloom {
 	filter: blur(30px) brightness(1.5);
 	opacity: 0.7;
@@ -48,13 +56,18 @@ button {
 }
 
 .button_main {
-	--size: clamp(var(--min-size), var(--ideal-size), var(--max-size));
+	/* --size: clamp(var(--min-size), var(--ideal-size), var(--max-size)); */
+
+	position: absolute;
+	transform: translate(-50%, -50%);
+	left: 300px;
+	top: 300px;
 	width: var(--size);
 	height: var(--size);
 	border-radius: 50%;
-	background-color: hsl(0, 0%, 9%);
-	position: relative;
-	transition: all 0.5s;
+	background-color: rgb(23, 23, 23);
+	transition: all 0.01s, background-colour 10s;
+	z-index: 1;
 }
 
 .button_main span {
@@ -72,11 +85,41 @@ button {
 	background-size: 600%;
 	animation: var(--duaration) linear infinite alternate glow;
 	opacity: 0;
-	transition: all 0.5s;
-	filter:blur(10px)
+	transition: all 1s;
+	filter: blur(10px)
 }
 
-.button_main::after {
+#startBtn {
+	position: relative;
+	width: 180px;
+	height: 50px;
+	border-radius: 100px;
+	background: #111;
+	color: #fff;
+	justify-content: center;
+	align-items: center;
+	font-weight: bolder;
+}
+
+#startBtn::after {
+	content: '';
+	display: var(--after-display);
+	position: absolute;
+	width: calc(100% + 10px);
+	height: calc(100% + 10px);
+	top: -5px;
+	left: -5px;
+	z-index: -1;
+	border-radius: inherit;
+	background: var(--gradient);
+	background-size: 300%;
+	filter: blur(5px) brightness(1.5);
+	animation: 3s linear infinite alternate glow;
+	opacity: 0;
+	transition: all 0.5s;
+}
+
+/* .button_main::after {
 	content: '';
 	position: absolute;
 	background: var(--gradient);
@@ -87,30 +130,43 @@ button {
 	
 	filter: blur(10px);
 	animation:  var(--duaration) linear infinite alternate glow;
-}
+} */
 
 @keyframes glow {
-	0% {background-position: 0 0;}
-	100% {background-position: 100% 0;}
+	0% {
+		background-position: 0 0;
+	}
+
+	100% {
+		background-position: 100% 0;
+	}
+
 	/* 100% {background-position: 0 0;} */
 }
 
 .button_main:hover::before {
 	opacity: 1;
 }
-.button_main:hover{
+
+.button_main:hover {
 	background: #fff;
 }
+
+#startBtn:hover::after{
+	opacity: 1;
+}
+
 .button_main:hover span {
 	color: #000;
 	font-weight: bolder;
 }
+
 .test {
 	display: none;
 	background: var(--gradient);
 	/* background-size: 600%; */
 	width: 200px;
 	height: 200px;
-	
+
 	/* animation: glow var(--duration) linear infinite; */
 }
