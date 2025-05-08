@@ -14,9 +14,9 @@ const button = document.querySelector(".button_main");
 const audioCtx = new (AudioContext || webkitAudioContext)();
 const songid = document.getElementById('songid');
 const stream = document.querySelector("#audioElement");
-stream.src = `./audio/aud${songid.value}.wav`;
+stream.src = `/static/audio/aud${songid.value}.wav`;
 songid.addEventListener("keyup", () => {
-	stream.src = `./audio/aud${songid.value}.wav`;
+	stream.src = `/static/audio/aud${songid.value}.wav`;
 
 });
 const playBtn = document.getElementById("play");
@@ -111,6 +111,13 @@ const freqToIdx = (i) => Math.floor(i * (2 * bufferLength / sampleRate));
 const idxToFreq = (i) => Math.floor(i * (sampleRate / (2 * bufferLength)));
 // const logIdx = (i,n) => Math.floor(Math.exp(logMax - logScale*(n-i)));
 const logIdx = (i, n) => (bufferLength - logSpread * Math.exp(logScale * i) + logSpread);
+
+setInterval(() => {
+	console.log(dataArray);
+	console.log(dataArray2);
+	console.log(currStream);
+	console.log(currAnalyser);
+}, 3000);
 
 function draw() {
 	drawVisual1 = requestAnimationFrame(draw);
@@ -519,6 +526,7 @@ let recSource;
 let recBlob, recUrl, recAudio;
 //console.log(recordBtn.outerHTML);
 
+recAnalyser.fftSize = 256;
 
 
 
@@ -555,6 +563,18 @@ recordBtn.addEventListener("click", async () => {
 			recUrl = URL.createObjectURL(recBlob);
 			recAudio = new Audio(recUrl);
 
+
+			const formData = new FormData();
+			const filename = 'audio_recording.wav';
+			formData.append('audio', recBlob, filename);
+
+			fetch('/playground/upload-audio/', {
+				method: 'POST',
+				body: formData
+			})
+				.then(res => res.json())
+				.then(data => console.log('Success:', data))
+				.catch(err => console.error('Upload error:', err));
 
 			// Create a download link and remove this when django backend is working
 			const a = document.createElement("a");
@@ -669,6 +689,8 @@ const startAudioCapture = async () => {
 
 	setTimeout(() => {
 		recorder.stop();
+		currAnalyser = analyser;
+		currStream = stream;
 		startBtn.innerHTML = "Record System Audio";
 		startBtn.disabled = false;
 		startBtn.style.setProperty('--after-display', 'block');
