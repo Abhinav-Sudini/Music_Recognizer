@@ -15,6 +15,7 @@ from .functions import *
 from queue import Queue
 import xxhash
 import numpy as np
+import pandas as pd
 import librosa
 
 # Create your views here.
@@ -94,10 +95,14 @@ def say_hello(request):
     song_id = 0
     audio_fpath = "./media/songs/"
     audio_clips = os.listdir(audio_fpath)
+    songs_dataframe = pd.read_excel('./songs.xlsx')
 
-    for song_path in audio_clips:
+    print(songs_dataframe["file"].tolist())
 
-        new_song = song(song_id=song_id,song_file=audio_fpath+song_path,singer="me",song_name="me to")
+    #for song_path in audio_clips:
+    for index,row in songs_dataframe.iterrows():
+        song_path = row["file"]
+        new_song = song(song_id=song_id,song_file=audio_fpath+song_path,singer=row["singer"],song_name=row["song_name"],link=row["link"])
         new_song.save()
         add_to_db(audio_fpath+song_path,new_song)
         song_id+=1
@@ -120,7 +125,7 @@ def test(request):
     return HttpResponse("done bro")
 
 def find_song(path):
-    hashs = find_hash("./media/user/"+path)
+    hashs = find_hash("./media/"+path)
     hash_dict = make_dict(hashs)
     hash_set = [hsh for hsh,off in hashs]
     str_hash = str(hash_set)
@@ -185,10 +190,29 @@ def find_song(path):
     
 
     print(top_song)
-    return top_song
+    final_song = {"id":0,"time":0}
+    max_match = 0
+
+    for key,value in top_song.items():
+        if value[0] > max_match:
+            final_song["id"] = key
+            final_song["time"] = value[1]
+            max_match = value[0]
+
+    query="""
+    select *
+    FROM test.application_song
+    WHERE song_id = %s ;
+""" % final_song["id"]
+    
+    output = execute_sql(query)[0]
+    output["time"] = max(0,int(final_song["time"]))
+
+    print(output)
+    return output
 
 def idk(request):
-    paths = ["song1_c.wav","song1_m.wav","song1_wec.wav","song1_ml.wav","song1_mll.wav","song1.wav","song2_sc.wav","song2_m.wav","song4_ml.wav","song4_webc.wav"]
+    paths = ["song1_c.wav","song1_m.wav","song1_wec.wav","song1_ml.wav","song1_mll.wav","song2_sc.wav","song2_m.wav","song4_ml.wav","song4_webc.wav","song4_webs.wav","song4_web_sri.wav","song4_web_rec.wav"]
     temp = {}
     for path in paths:
         print(path,".............")
@@ -197,7 +221,7 @@ def idk(request):
 
         temp[path] = top_song
         print("top song" ,top_song)
-    print(temp)
+
     return render(request, 'temp.html',{"songs":temp})
 
 def _delete_file(path):
@@ -225,9 +249,12 @@ def my_view(request):
 
     # Load documents for the list page
     # documents = Document.objects.all()
+    context = {'form': form, 'message': message}
 
     # Render list page with the documents and the form
-    context = {'form': form, 'message': message}
+    # context["top_song"] = (find_song("song4_web_rec.wav"))
+    # top_song[song] =
+
     return render(request, 'index.html',context)
 
 def find_pe(X,nfft,SR):
@@ -290,17 +317,22 @@ def find_peak_fq(audio_path):
 
 @csrf_exempt
 def upload_audio(request):
+    print("hi")
     if request.method == 'POST' and request.FILES.get('audio'):
         audio_file = request.FILES['audio']
 
         # Save original webm
-        temp_input_path = default_storage.save('temp_input.wav', audio_file)
+        temp_input_path = default_storage.save('temp/temp_input.wav', audio_file)
         input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
-        #print("temp:",temp_input_path, "\ninp:",input_path)
+        print("temp:",temp_input_path, "\ninp:",input_path)
 
         # DO PROCESSING 
-
+        json_out = {'status': 'success'}
+        json_out["song"] = find_song(temp_input_path)
         # Clean up temp file
         # default_storage.delete(temp_input_path)
+        print(json_out)
 
-        return JsonResponse({'status': 'success'}) #SEND TO FRONTEND
+        # example output
+        # {'status': 'success', 'song': {'song_id': 0, 'song_file': './media/songs/song4.wav', 'singer': 'me', 'song_name': ' Force Projection | Cyberpunk 2077', 'link': 'bSpQpImpZbw', 'time': 54}}
+        return JsonResponse(json_out) #SEND TO FRONTEND
