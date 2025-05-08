@@ -649,7 +649,7 @@ const startAudioCapture = async () => {
 		const filename = 'audio_recording.wav';
 		formData.append('audio', blob, filename);
 
-		fetch('/playground/upload-audio/', {
+		fetch('/play/upload-audio/', {
 			method: 'POST',
 			body: formData
 		})
