@@ -536,7 +536,8 @@ recordBtn.addEventListener("click", async () => {
 		recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		recorder = new MediaRecorder(recStream);
 
-
+		audioRecCtx = new (AudioContext || webkitAudioContext)();
+		recAnalyser = audioRecCtx.createAnalyser();
 		recSource = audioRecCtx.createMediaStreamSource(recStream);
 		recSource.connect(recAnalyser);
 		//recSource.connect(audioRecCtx.destination);
@@ -577,12 +578,12 @@ recordBtn.addEventListener("click", async () => {
 				.catch(err => console.error('Upload error:', err));
 
 			// Create a download link and remove this when django backend is working
-			const a = document.createElement("a");
-			a.href = recUrl;
-			a.download = "rec.wav";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
+			// const a = document.createElement("a");
+			// a.href = recUrl;
+			// a.download = "rec.wav";
+			// document.body.appendChild(a);
+			// a.click();
+			// document.body.removeChild(a);
 
 
 			recAudio.addEventListener("start", () => console.log("Recording playing starts"));
@@ -649,6 +650,8 @@ const startAudioCapture = async () => {
 	const recorder = new MediaRecorder(audioOnlyStream);
 	const chunks = [];
 
+	audioRecCtx = new (AudioContext || webkitAudioContext)();
+	recAnalyser = audioRecCtx.createAnalyser();
 	recSource = audioRecCtx.createMediaStreamSource(stream);
 	recSource.connect(recAnalyser);
 
