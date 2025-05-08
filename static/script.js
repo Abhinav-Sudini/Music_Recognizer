@@ -112,12 +112,12 @@ const idxToFreq = (i) => Math.floor(i * (sampleRate / (2 * bufferLength)));
 // const logIdx = (i,n) => Math.floor(Math.exp(logMax - logScale*(n-i)));
 const logIdx = (i, n) => (bufferLength - logSpread * Math.exp(logScale * i) + logSpread);
 
-setInterval(() => {
-	console.log(dataArray);
-	console.log(dataArray2);
-	console.log(currStream);
-	console.log(currAnalyser);
-}, 3000);
+// setInterval(() => {
+// 	console.log(dataArray);
+// 	console.log(dataArray2);
+// 	console.log(currStream);
+// 	console.log(currAnalyser);
+// }, 3000);
 
 function draw() {
 	drawVisual1 = requestAnimationFrame(draw);
@@ -569,12 +569,31 @@ recordBtn.addEventListener("click", async () => {
 			const filename = 'audio_recording.wav';
 			formData.append('audio', recBlob, filename);
 
-			fetch('/playground/upload-audio/', {
+			fetch('/play/upload-audio/', {
 				method: 'POST',
 				body: formData
 			})
 				.then(res => res.json())
-				.then(data => console.log('Success:', data))
+				.then(data => {
+					console.log(data);
+
+					const iframe = document.querySelector("#song_iframe");
+					iframe.style.setProperty("display", "block");
+					iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
+
+					const song_details = document.querySelector('.song-details');
+					song_details.style.setProperty("display", "block");
+
+					const song_name = song_details.querySelector('#song-name');
+					const song_singer = song_details.querySelector('#song-singer');
+
+					song_name.innerHTML = data['song']['song_name'];
+					song_singer.innerHTML = data['song']['singer'];
+
+					// console.log(song_details);
+					// console.log(song_name);
+					// console.log(song_singer);
+				})
 				.catch(err => console.error('Upload error:', err));
 
 			// Create a download link and remove this when django backend is working
@@ -677,7 +696,26 @@ const startAudioCapture = async () => {
 			body: formData
 		})
 			.then(res => res.json())
-			.then(data => console.log('Success:', data))
+			.then(data => {
+				console.log(data);
+
+				const iframe = document.querySelector("#song_iframe");
+				iframe.style.setProperty("display", "block");
+				iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
+
+				const song_details = document.querySelector('.song-details');
+				song_details.style.setProperty("display", "block");
+
+				const song_name = song_details.querySelector('#song-name');
+				const song_singer = song_details.querySelector('#song-singer');
+
+				song_name.innerHTML = data['song']['song_name'];
+				song_singer.innerHTML = data['song']['singer'];
+
+				// console.log(song_details);
+				// console.log(song_name);
+				// console.log(song_singer);
+			})
 			.catch(err => console.error('Upload error:', err));
 
 
@@ -709,4 +747,96 @@ startBtn.onclick = async () => {
 	startBtn.style.setProperty('--after-display', 'none');
 	startAudioCapture();
 }
+
+
+// ██╗   ██╗██████╗ ██╗      ██████╗  █████╗ ██████╗     ███████╗██╗██╗     ███████╗
+// ██║   ██║██╔══██╗██║     ██╔═══██╗██╔══██╗██╔══██╗    ██╔════╝██║██║     ██╔════╝
+// ██║   ██║██████╔╝██║     ██║   ██║███████║██║  ██║    █████╗  ██║██║     █████╗  
+// ██║   ██║██╔═══╝ ██║     ██║   ██║██╔══██║██║  ██║    ██╔══╝  ██║██║     ██╔══╝  
+// ╚██████╔╝██║     ███████╗╚██████╔╝██║  ██║██████╔╝    ██║     ██║███████╗███████╗
+//  ╚═════╝ ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝     ╚═╝     ╚═╝╚══════╝╚══════╝
+
+const dropArea = document.getElementById("drop-area");
+const fileInput = document.getElementById("fileInput");
+const fileNameDisplay = document.getElementById("file-name");
+const uploadBtn = document.getElementById("audio-uploadBtn");
+const form = document.getElementById("upload-form");
+
+let audioFile = null;
+
+dropArea.addEventListener("dragover", (e) => {
+	e.preventDefault();
+	dropArea.classList.add("dragover");
+});
+
+dropArea.addEventListener("dragleave", () => {
+	dropArea.classList.remove("dragover");
+});
+
+dropArea.addEventListener("drop", (e) => {
+	e.preventDefault();
+	dropArea.classList.remove("dragover");
+
+	const file = e.dataTransfer.files[0];
+	if (file.type !== "audio/wav" && !file.name.endsWith(".wav")) {
+		alert("Only .wav audio files are allowed.");
+		return;
+	}
+
+	audioFile = file;
+	fileInput.files = e.dataTransfer.files;
+	fileNameDisplay.textContent = `Selected: ${file.name}`;
+});
+
+fileInput.addEventListener("change", () => {
+	const file = fileInput.files[0];
+	if (file.type !== "audio/wav" && !file.name.endsWith(".wav")) {
+		alert("Only .wav audio files are allowed.");
+		return;
+	}
+
+	audioFile = file;
+	fileNameDisplay.textContent = `Selected: ${file.name}`;
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+		if (!audioFile) {
+			alert("No audio file selected.");
+			return;
+		}
+
+		const formData = new FormData();
+		formData.append("audio", audioFile, "recording.wav");
+
+		fetch('/play/upload-audio/', {
+			method: 'POST',
+			body: formData
+		})
+			.then(res => res.json())
+			.then(data => {
+				console.log(data);
+
+				const iframe = document.querySelector("#song_iframe");
+				iframe.style.setProperty("display", "block");
+				iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
+
+				const song_details = document.querySelector('.song-details');
+				song_details.style.setProperty("display", "block");
+
+				const song_name = song_details.querySelector('#song-name');
+				const song_singer = song_details.querySelector('#song-singer');
+
+				song_name.innerHTML = data['song']['song_name'];
+				song_singer.innerHTML = data['song']['singer'];
+
+				// console.log(song_details);
+				// console.log(song_name);
+				// console.log(song_singer);
+			})
+			.catch(err => console.error('Upload error:', err));
+	});
+});
+
 

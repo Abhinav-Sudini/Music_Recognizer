@@ -23,4 +23,4 @@ class fingerprint(models.Model):
 
 
 class user_file(models.Model):
-    docfile = models.FileField(upload_to='media/user')
+    docfile = models.FileField(upload_to='temp')

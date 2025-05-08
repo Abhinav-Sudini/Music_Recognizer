@@ -17,16 +17,33 @@
 		<canvas id="visualizer4" width="600" height="600"></canvas>
 	</div>
 
-	<div class="screen-record-container">
-		<button id="startBtn" style="--after-display: block;">Record System Audio</button>
-	</div>
-
 	<div class="iframe-container"></div>
-	<iframe width="560" height="315" src="https://www.youtube.com/embed/BSpR0DJEgxM?si=btZVI6r5qcL1i1vP"
-		title="YouTube video player" frameborder="0"
+	<iframe id="song_iframe" style="display: none;" width="560" height="315"
+		src="https://www.youtube.com/embed/BSpR0DJEgxM?amp;start=125" title="YouTube video player" frameborder="0"
 		allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 		referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 	</div>
+
+	<div style="display: none;" class="song-details">
+		<p id="song-name">CYBERphonk</p>
+		<p id="song-singer">P.T.Adamczyk</p>
+	</div>
+
+	<div class="screen-record-container">
+		<button id="startBtn" style="--after-display: block;">Record System Audio</button>
+		<form id="upload-form" method="POST">
+			{% csrf_token %}
+			<div id="drop-area" class="drop-zone">
+				<p style="color: #fff;">Drag & drop an audio file here or</p>
+				<label for="fileInput" class="custom-file-upload">Choose File</label>
+				<input type="file" id="fileInput" name="myfile" accept=".wav" hidden>
+				<p id="file-name"></p>
+			</div>
+			<button type="submit" id="audio-uploadBtn">UPLOAD</button>
+		</form>
+	</div>
+
+	
 
 	<div class="test"></div>
 	<canvas id="visualizer1" width="500" height="150"></canvas>
@@ -38,7 +55,7 @@
 		<audio id="audioElement" controls></audio>
 
 	</div>
-	
+
 	<script type="text/javascript" src="{% static 'script.js' %}"></script>
 </body>
 

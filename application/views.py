@@ -25,8 +25,8 @@ def find_hash(path):
 
     length = len(peaks)
     hashes = []
-    print(peaks[0:5])
-    print(peaks[10],"peak len ",length)
+    # print(peaks[0:5])
+    # print(peaks[10],"peak len ",length)
 
     # for i in range(length-10):
     #     for col in range(len(peaks[i])):
@@ -65,7 +65,7 @@ def find_hash(path):
         # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
         
 
-    print("before hash len ",len(hashes))
+    # print("before hash len ",len(hashes))
 
     return hashes
 
@@ -73,7 +73,7 @@ def add_to_db(path,new_song):
 
     hashes = find_hash(path)
     hashset = hashes
-    print("need to add ",len(hashset))
+    # print("need to add ",len(hashset))
     batch_size = 500
     objs = (fingerprint(hash=hsh,offset=off,song_id=new_song) for hsh,off in hashset)
     while True:
@@ -82,7 +82,7 @@ def add_to_db(path,new_song):
             break
         fingerprint.objects.bulk_create(batch, batch_size)
 
-    print("added - ",len(hashset))
+    # print("added - ",len(hashset))
 
 
 def say_hello(request):
@@ -97,7 +97,7 @@ def say_hello(request):
     audio_clips = os.listdir(audio_fpath)
     songs_dataframe = pd.read_excel('./songs.xlsx')
 
-    print(songs_dataframe["file"].tolist())
+    # print(songs_dataframe["file"].tolist())
 
     #for song_path in audio_clips:
     for index,row in songs_dataframe.iterrows():
@@ -107,7 +107,7 @@ def say_hello(request):
         add_to_db(audio_fpath+song_path,new_song)
         song_id+=1
            
-    print("hi"*10)
+    # print("hi"*10)
     return HttpResponse("done bro")
 
 def to_int(st):
@@ -140,7 +140,7 @@ def find_song(path):
 # """ % str_hash
     top_song = {}
 
-    print("total hsh", len(hashs))
+    # print("total hsh", len(hashs))
     for song_id in range(4):
         query = """
             SELECT hash, offset
@@ -152,7 +152,7 @@ def find_song(path):
 
         length = len(matched_hsh)
         coherence_score=0
-        print(matched_hsh[0:10])
+        # print(matched_hsh[0:10])
         sum_offset = 0
         temp_off = []
         mini_off = 10000
@@ -184,7 +184,7 @@ def find_song(path):
         if not coherence_score == 0:
             song_time = sum_offset/coherence_score - len(hashs)/2
 
-        print(temp_off)
+        # print(temp_off)
         top_song[song_id] = (coherence_score,song_time*0.0463)
 
     
@@ -220,7 +220,7 @@ def idk(request):
         # top_song[song] =
 
         temp[path] = top_song
-        print("top song" ,top_song)
+        # print("top song" ,top_song)
 
     return render(request, 'temp.html',{"songs":temp})
 
@@ -230,18 +230,26 @@ def _delete_file(path):
         os.remove(path)
 
 def my_view(request):
-    print(f"Great! You're using Python 3.6+. If you fail here, use the right version.")
     message = 'Upload as many files as you want!'
+    
     # Handle file upload
+    context = { 'message': message}
+
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            newdoc = user_file(docfile=request.FILES['docfile'])
-            newdoc.save()
-            print("good\n"*10)
+            audio_file = request.FILES['docfile']
+            temp_input_path = default_storage.save('temp/temp_input.wav', audio_file)
+            input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
+            print("temp:",temp_input_path, "\ninp:",input_path)
+
+            context["song"] = find_song(temp_input_path)
+            # Clean up temp file
+            # default_storage.delete(temp_input_path)
+            print(context)
+            default_storage.delete(input_path)
 
             # Redirect to the document list after POST
-            return redirect('my-view')
         else:
             message = 'The form is not valid. Fix the following error:'
     else:
@@ -249,7 +257,7 @@ def my_view(request):
 
     # Load documents for the list page
     # documents = Document.objects.all()
-    context = {'form': form, 'message': message}
+    context['form'] = form
 
     # Render list page with the documents and the form
     # context["top_song"] = (find_song("song4_web_rec.wav"))
@@ -332,6 +340,29 @@ def upload_audio(request):
         # Clean up temp file
         # default_storage.delete(temp_input_path)
         print(json_out)
+        default_storage.delete(input_path)
+
+        # example output
+        # {'status': 'success', 'song': {'song_id': 0, 'song_file': './media/songs/song4.wav', 'singer': 'me', 'song_name': ' Force Projection | Cyberpunk 2077', 'link': 'bSpQpImpZbw', 'time': 54}}
+        return JsonResponse(json_out) #SEND TO FRONTEND
+    
+def find_with_file(request):
+    print("hi")
+    if request.method == 'POST' and request.FILES.get('audio'):
+        audio_file = request.FILES['audio']
+
+        # Save original webm
+        temp_input_path = default_storage.save('temp/temp_input.wav', audio_file)
+        input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
+        print("temp:",temp_input_path, "\ninp:",input_path)
+
+        # DO PROCESSING 
+        json_out = {'status': 'success'}
+        json_out["song"] = find_song(temp_input_path)
+        # Clean up temp file
+        # default_storage.delete(temp_input_path)
+        print(json_out)
+        default_storage.delete(input_path)
 
         # example output
         # {'status': 'success', 'song': {'song_id': 0, 'song_file': './media/songs/song4.wav', 'singer': 'me', 'song_name': ' Force Projection | Cyberpunk 2077', 'link': 'bSpQpImpZbw', 'time': 54}}
