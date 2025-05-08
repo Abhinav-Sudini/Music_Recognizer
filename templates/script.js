@@ -638,13 +638,13 @@ const startAudioCapture = async () => {
 	};
 
 	recorder.onstop = () => {
-		const blob = new Blob(chunks, { type: 'audio/webm' });
+		const blob = new Blob(chunks, { type: 'audio/wav' });
 		const url = URL.createObjectURL(blob);
 
 		// Create a download link
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'audio_recording.webm';
+		a.download = 'audio_recording.wav';
 		a.click();
 	};
 
@@ -657,7 +657,7 @@ const startAudioCapture = async () => {
 		startBtn.style.setProperty('--after-display', 'block');
 		stream.getTracks().forEach(track => track.stop());
 		console.log("STOP");
-	}, 10000);
+	}, 15000);
 
 };
 
