@@ -1,9 +1,11 @@
 from django.db import models
 
 # Create your models here.
+    
 class song(models.Model):
     song_id = models.SmallIntegerField(primary_key = True)
     song_file = models.FileField(null=True)
+    link = models.CharField(max_length=40,null=True)
     singer = models.CharField(max_length=40,null=True)
     song_name = models.CharField(max_length=40,null=True)
 
