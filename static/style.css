@@ -170,3 +170,33 @@ button {
 
 	/* animation: glow var(--duration) linear infinite; */
 }
+
+.song-details {
+	width: 60dvw;
+	color: #fff;
+	padding: 0.5em 1em;
+	border: #fff solid 2px;
+	border-radius: 10px;
+
+}
+
+.song-details > :first-child {
+	padding-top: 0.5rem;
+}
+
+.song-details > :last-child {
+	padding-bottom: 0.5rem;
+}
+
+.song-details > * + * {
+	padding-top: 1rem;
+}
+
+#song-name {
+	font-weight: bolder;
+	font-size: 2rem;
+}
+
+#song-singer {
+	font-size: 1.2rem;
+}
