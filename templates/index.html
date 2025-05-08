@@ -11,6 +11,7 @@
 </head>
 
 <body>
+	<h1>MUSIC MATCH</h1>
 	<div class="test"></div>
 	<div class="container">
 		<button class="button_main"><span>RECORD</span></button>
@@ -43,15 +44,16 @@
 		<p id="song-singer">P.T.Adamczyk</p>
 	</div>
 
-	<div class="test"></div>
-	<canvas id="visualizer1" width="500" height="150"></canvas>
-	<canvas id="visualizer2" width="500" height="150"></canvas>
-	<div class="visualContainer">
+	<!-- <div style="display: none;" class="test"></div> -->
+	<!-- <canvas id="visualizer1" width="500" height="150"></canvas>
+	<canvas id="visualizer2" width="500" height="150"></canvas> -->
+	<div style="display: none;" class="visualContainer">
 		<button id="play" data-playing="false">PLAY</button>
 		<input type="text" value="" id="songid" style="width:1rem;" />
 		<audio id="audioElement" controls></audio>
-
 	</div>
+	
+	<footer style="height: 20vh;"></footer>
 
 	<script type="text/javascript" src="{% static 'script.js' %}"></script>
 </body>
