@@ -31,6 +31,16 @@ body {
 	background: var(--bg-color);
 }
 
+h1 {
+	background-color: #111;
+	color: #fff;
+	font-size: 3rem;
+	width: 100%;
+	text-align: center;
+	padding: 1rem;
+	overflow: hidden;
+}
+
 .visualContainer {
 	display: flex;
 	flex-flow: row;
@@ -66,7 +76,7 @@ button {
 	height: var(--size);
 	border-radius: 50%;
 	background-color: rgb(23, 23, 23);
-	transition: all 0.01s, background-colour 10s;
+	transition: all 0.01s, background-color 1s;
 	z-index: 1;
 }
 
@@ -149,7 +159,7 @@ button:not(.button_main)::after {
 }
 
 .button_main:hover {
-	background: #fff;
+	background-color: #fff;
 }
 
 button:not(.button_main):hover::after{
@@ -172,7 +182,7 @@ button:not(.button_main):hover::after{
 }
 
 .song-details {
-	width: 60dvw;
+	width: 40dvw;
 	color: #fff;
 	padding: 0.5em 1em;
 	border: #fff solid 2px;
@@ -242,4 +252,8 @@ form {
     margin-top: 10px;
     font-style: italic;
     color: #fff;
+}
+
+#song_iframe {
+	padding: 1em 0;
 }
