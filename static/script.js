@@ -147,7 +147,7 @@ const canvasCtx2 = canvas2.getContext('2d');
 canvas2.addEventListener('click', () => {
 	console.log(dataArray2, scaledDataArray2, FMArray);
 	console.log(((Date.now()) / 500));
-	
+
 })
 
 
@@ -167,8 +167,8 @@ canvas2.addEventListener('click', () => {
 function draw2() {
 	drawVisual2 = requestAnimationFrame(draw2);
 	//if (!currStream.paused || currStream.active){
-		currAnalyser.getByteFrequencyData(dataArray2);
-		FMArray = Array.from(dataArray2, (v, i) => (v + 0.0) * fletcherMunsonWeight(idxToFreq(i)));
+	currAnalyser.getByteFrequencyData(dataArray2);
+	FMArray = Array.from(dataArray2, (v, i) => (v + 0.0) * fletcherMunsonWeight(idxToFreq(i)));
 	//}
 	canvasCtx2.fillStyle = "rgb(200 200 200)";
 	canvasCtx2.fillRect(0, 0, WIDTH, HEIGHT);
@@ -342,8 +342,8 @@ function draw2() {
 
 const canvas4 = document.querySelector('#visualizer4');
 const canvasCtx4 = canvas4.getContext('2d');
-const 
-WIDTH4 = canvas4.width;
+const
+	WIDTH4 = canvas4.width;
 HEIGHT4 = canvas4.width;
 
 function draw4() {
@@ -359,19 +359,19 @@ function draw4() {
 	const now = Date.now();
 
 
-	const r = (v) => { return ((v**2)/1.5) * 200 - 1; };
+	const r = (v) => { return ((v ** 2) / 1.5) * 200 - 1; };
 	const g = (v) => { return 40 };
 	const b = (v) => { return 255 - v * 100; };
 	const shadowGlow = 20;
 
 	canvasCtx4.shadowBlur = 15;
 	canvasCtx4.beginPath();
-    canvasCtx4.arc(WIDTH4/2, HEIGHT4/2, innerRadius, 0, Math.PI * 2);
+	canvasCtx4.arc(WIDTH4 / 2, HEIGHT4 / 2, innerRadius, 0, Math.PI * 2);
 	canvasCtx4.fillStyle = `rgb(23, 23, 23) `;
-    canvasCtx4.fill();
+	canvasCtx4.fill();
 	canvasCtx4.lineWidth = 2;
 
-	button.style.setProperty('--size', 2*innerRadius+"px");
+	button.style.setProperty('--size', 2 * innerRadius + "px");
 
 	const idleAnimation = (i, minRadius, fr) => {
 		return minRadius * (3 + (1.5 * Math.sin(((i) / fr + (now / 5000)) * Math.PI * 4)))
@@ -514,7 +514,7 @@ let audioChunk = [];
 let isRecording = false;
 let recorder, recStream;
 let audioRecCtx = new (AudioContext || webkitAudioContext)();
-let recAnalyser = audioRecCtx.createAnalyser(); 
+let recAnalyser = audioRecCtx.createAnalyser();
 let recSource;
 let recBlob, recUrl, recAudio;
 //console.log(recordBtn.outerHTML);
@@ -523,9 +523,9 @@ let recBlob, recUrl, recAudio;
 
 
 recordBtn.addEventListener("click", async () => {
-	if(!isRecording){
+	if (!isRecording) {
 		stream.pause();
-		recStream = await navigator.mediaDevices.getUserMedia({audio: true});
+		recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 		recorder = new MediaRecorder(recStream);
 
 
@@ -540,12 +540,12 @@ recordBtn.addEventListener("click", async () => {
 
 		recorder.start();
 		recorder.ondataavailable = e => {
-			audioChunk=[];
+			audioChunk = [];
 			audioChunk.push(e.data);
-			
+
 		};
 
-		isRecording=true;
+		isRecording = true;
 		console.log("Recording Starts...");
 		console.log(isRecording);
 
@@ -555,6 +555,8 @@ recordBtn.addEventListener("click", async () => {
 			recUrl = URL.createObjectURL(recBlob);
 			recAudio = new Audio(recUrl);
 
+
+			// Create a download link and remove this when django backend is working
 			const a = document.createElement("a");
 			a.href = recUrl;
 			a.download = "rec.wav";
@@ -562,16 +564,16 @@ recordBtn.addEventListener("click", async () => {
 			a.click();
 			document.body.removeChild(a);
 
-			
+
 			recAudio.addEventListener("start", () => console.log("Recording playing starts"));
 			recAudio.addEventListener("ended", () => console.log("Recording playing ended"));
 			//recAudio.play();
 		}
 
-		
-	}else{
+
+	} else {
 		recorder.stop();
-		isRecording=false;
+		isRecording = false;
 		recStream.getTracks().forEach(track => track.stop());
 		//recorder.requestData();
 		setTimeout(() => {
@@ -591,8 +593,8 @@ window.addEventListener('load', () => {
 	if (audioCtx.state === "suspended") {
 		audioCtx.resume();
 	}
-	currAnalyser=analyser;
-	currStream=stream;
+	currAnalyser = analyser;
+	currStream = stream;
 	draw();
 	draw2();
 	//draw3();
@@ -641,11 +643,26 @@ const startAudioCapture = async () => {
 		const blob = new Blob(chunks, { type: 'audio/wav' });
 		const url = URL.createObjectURL(blob);
 
-		// Create a download link
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'audio_recording.wav';
-		a.click();
+
+		//Send a AJAX POST request to backend at /playground/upload-audio/
+		const formData = new FormData();
+		const filename = 'audio_recording.wav';
+		formData.append('audio', blob, filename);
+
+		fetch('/playground/upload-audio/', {
+			method: 'POST',
+			body: formData
+		})
+			.then(res => res.json())
+			.then(data => console.log('Success:', data))
+			.catch(err => console.error('Upload error:', err));
+
+
+		// Create a download link and remove this when django backend is working
+		// const a = document.createElement('a');
+		// a.href = url;
+		// a.download = 'audio_recording.wav';
+		// a.click();
 	};
 
 	recorder.start();
@@ -662,7 +679,7 @@ const startAudioCapture = async () => {
 };
 
 startBtn.onclick = async () => {
-	startBtn.innerHTML="Recording...";
+	startBtn.innerHTML = "Recording...";
 	startBtn.disabled = true;
 	startBtn.style.setProperty('--after-display', 'none');
 	startAudioCapture();
