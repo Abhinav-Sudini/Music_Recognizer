@@ -1,1 +1,5 @@
+**/__pycache__
+**/migrations
 media/
+test.ipynb
+db*
