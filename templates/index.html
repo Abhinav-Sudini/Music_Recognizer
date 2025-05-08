@@ -1,6 +1,5 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,25 +7,39 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-	<link rel="stylesheet" href="{% static 'static/style.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 </head>
 
 <body>
-	<button class="button_main"><span>LOGO OR NAME</span></button>
+	<div class="test"></div>
+	<div class="container">
+		<button class="button_main"><span>RECORD</span></button>
+		<canvas id="visualizer4" width="600" height="600"></canvas>
+	</div>
+
+	<div class="screen-record-container">
+		<button id="startBtn" style="--after-display: block;">Record System Audio</button>
+	</div>
+
+	<div class="iframe-container"></div>
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/BSpR0DJEgxM?si=btZVI6r5qcL1i1vP"
+		title="YouTube video player" frameborder="0"
+		allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+		referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+	</div>
+
 	<div class="test"></div>
 	<canvas id="visualizer1" width="500" height="150"></canvas>
 	<canvas id="visualizer2" width="500" height="150"></canvas>
 	<div class="visualContainer">
 
 		<button id="play" data-playing="false">PLAY</button>
-
-		<input type="text"value="" id="songid" style="width:1rem;" />
+		<input type="text" value="" id="songid" style="width:1rem;" />
 		<audio id="audioElement" controls></audio>
-		<canvas id="visualizer4" width="600" height="600"></canvas>
+
 	</div>
-	<button class="record">Record</button>
 	
-	<script src="{% static 'static/script.js' %}"></script>
+	<script type="text/javascript" src="{% static 'script.js' %}"></script>
 </body>
 
 </html>

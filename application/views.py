@@ -1,6 +1,10 @@
+import os
 from django.shortcuts import render,redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import song,user_file,fingerprint
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.conf import settings
 from .form import DocumentForm
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
@@ -12,7 +16,6 @@ from queue import Queue
 import xxhash
 import numpy as np
 import librosa
-import os
 
 # Create your views here.
 
@@ -284,3 +287,20 @@ def find_peak_fq(audio_path):
     print("done")
 
     return  all_peaks
+
+@csrf_exempt
+def upload_audio(request):
+    if request.method == 'POST' and request.FILES.get('audio'):
+        audio_file = request.FILES['audio']
+
+        # Save original webm
+        temp_input_path = default_storage.save('temp_input.wav', audio_file)
+        input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
+        #print("temp:",temp_input_path, "\ninp:",input_path)
+
+        # DO PROCESSING 
+
+        # Clean up temp file
+        # default_storage.delete(temp_input_path)
+
+        return JsonResponse({'status': 'success'}) #SEND TO FRONTEND
