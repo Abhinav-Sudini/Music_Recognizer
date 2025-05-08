@@ -19,11 +19,21 @@
 
 	<div class="screen-record-container">
 		<button id="startBtn" style="--after-display: block;">Record System Audio</button>
+		<form id="upload-form" method="POST">
+			{% csrf_token %}
+			<div id="drop-area" class="drop-zone">
+				<p style="color: #fff;">Drag & drop an audio file here or</p>
+				<label for="fileInput" class="custom-file-upload">Choose File</label>
+				<input type="file" id="fileInput" name="myfile" accept=".wav" hidden>
+				<p id="file-name"></p>
+			</div>
+			<button type="submit" id="audio-uploadBtn">UPLOAD</button>
+		</form>
 	</div>
 
 	<div class="iframe-container"></div>
-	<iframe id="song_iframe" style="display: none;" width="560" height="315" src="https://www.youtube.com/embed/BSpR0DJEgxM?amp;start=125"
-		title="YouTube video player" frameborder="0"
+	<iframe id="song_iframe" style="display: none;" width="560" height="315"
+		src="https://www.youtube.com/embed/BSpR0DJEgxM?amp;start=125" title="YouTube video player" frameborder="0"
 		allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 		referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 	</div>
@@ -43,7 +53,7 @@
 		<audio id="audioElement" controls></audio>
 
 	</div>
-	
+
 	<script type="text/javascript" src="{% static 'script.js' %}"></script>
 </body>
 
