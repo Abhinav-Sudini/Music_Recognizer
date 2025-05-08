@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 **/__pycache__
 **/migrations
 media/
 test.ipynb
 db*
+=======
+media/
+>>>>>>> test
