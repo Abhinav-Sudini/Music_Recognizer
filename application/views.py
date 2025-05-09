@@ -17,6 +17,7 @@ import xxhash
 import numpy as np
 import pandas as pd
 import librosa
+import matplotlib.pyplot as plt
 
 # Create your views here.
 
@@ -25,32 +26,6 @@ def find_hash(path):
 
     length = len(peaks)
     hashes = []
-    # print(peaks[0:5])
-    # print(peaks[10],"peak len ",length)
-
-    # for i in range(length-10):
-    #     for col in range(len(peaks[i])):
-    #         num_added = 0
-    #         for j in range(0,10):
-    #             for col_nex in range(len(peaks[i+j])):
-    #                 if j==0 and col==col_nex:
-    #                     continue
-
-    #                 str_fq = str(peaks[i][col]) 
-    #                 str_fq += str(peaks[i+j][col_nex])
-    #                 str_fq += str(j)
-    #                 # gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
-    #                 gen_hash = peaks[i][col]*1000000 + peaks[i+j][col_nex]*1000 + j
-    #                 hashes.append((gen_hash,i))
-    #                 num_added+=1
-
-    #                 if num_added>3:
-    #                     break
-
-    #             if num_added>3:
-    #                 break
-
-    
     for index in range(length):
         pt = 0
         temp = []
@@ -62,10 +37,6 @@ def find_hash(path):
         str_fq = str(sorted(list(temp[:-1])))
         gen_hash = to_int(xxhash.xxh3_64_hexdigest(str_fq))
         hashes.append((gen_hash,index))
-        # str_fq = str(peaks[index][i] + (peaks[index][j]<<10)+(peaks[index][k]<<20))
-        
-
-    # print("before hash len ",len(hashes))
 
     return hashes
 
@@ -73,7 +44,7 @@ def add_to_db(path,new_song):
 
     hashes = find_hash(path)
     hashset = hashes
-    # print("need to add ",len(hashset))
+    print("need to add ",len(hashset))
     batch_size = 500
     objs = (fingerprint(hash=hsh,offset=off,song_id=new_song) for hsh,off in hashset)
     while True:
@@ -82,7 +53,7 @@ def add_to_db(path,new_song):
             break
         fingerprint.objects.bulk_create(batch, batch_size)
 
-    # print("added - ",len(hashset))
+    print("added - ",len(hashset))
 
 
 def say_hello(request):
@@ -95,7 +66,8 @@ def say_hello(request):
     song_id = 0
     audio_fpath = "./media/songs/"
     audio_clips = os.listdir(audio_fpath)
-    songs_dataframe = pd.read_excel('./songs.xlsx')
+    songs_dataframe = pd.read_excel('./song.xlsx')
+    print(songs_dataframe)
 
     # print(songs_dataframe["file"].tolist())
 
@@ -106,6 +78,7 @@ def say_hello(request):
         new_song.save()
         add_to_db(audio_fpath+song_path,new_song)
         song_id+=1
+        print("done with ",song_path)
            
     # print("hi"*10)
     return HttpResponse("done bro")
@@ -114,34 +87,18 @@ def to_int(st):
     return int(st[8:], 16)
 
 def test(request):
-    # new = song()
-    # new.song_id = 5
-    # new.song_file = "media/user/royalty-free-use-lofi-chill-background-music-dreamscape-201679.wav"
-    # new.singer = "xy"
-    # new.song_name = "xyz"
-    # new.save()
-    # new = fingerprint(hash=hsh,offset=0,song_id=new_song)
-    # new.save()
     return HttpResponse("done bro")
 
-def find_song(path):
+def find_song(path,type="file"):
     hashs = find_hash("./media/"+path)
     hash_dict = make_dict(hashs)
     hash_set = [hsh for hsh,off in hashs]
     str_hash = str(hash_set)
     str_hash = str_hash[1:-1]
-
-#     query = """
-#     SELECT count(*) as cnt,song_id_id 
-#     FROM test.application_fingerprint 
-#     WHERE hash in ( %s ) 
-#     group by song_id_id
-#     order by count(*) desc;
-# """ % str_hash
     top_song = {}
 
-    # print("total hsh", len(hashs))
-    for song_id in range(4):
+    
+    for song_id in range(10):
         query = """
             SELECT hash, offset
             FROM test.application_fingerprint 
@@ -152,24 +109,27 @@ def find_song(path):
 
         length = len(matched_hsh)
         coherence_score=0
-        # print(matched_hsh[0:10])
         sum_offset = 0
         temp_off = []
+        values = []
         mini_off = 10000
+
         for i in range(length-10):
             hsh1,off1 =  matched_hsh[i]
             for j in range(1,5):
+
                 hsh2,off2 = matched_hsh[i+j]
                 user_off1 = hash_dict[hsh1]
                 user_off2 = hash_dict[hsh2]
-
                 dif_offeset = abs(off2-off1)
                 flag = True
+
                 for u_off1 in user_off1:
                     for u_off2 in user_off2:
-                        if u_off1<u_off2 and abs(dif_offeset-(u_off2-u_off1))<5:
+                        if u_off1<u_off2 and abs(dif_offeset-(u_off2-u_off1))<4:
                             coherence_score+=1
                             sum_offset+= off1
+                            values.append(off1)
                             mini_off = min(mini_off,off1)
                             temp_off.append(off1)
                             flag = False
@@ -177,14 +137,20 @@ def find_song(path):
                     if flag==False:
                         break
 
-                # if abs(dif_offeset - SmallestDifference(user_off1,user_off2))<3:
-                #     coherence_score+=1
 
         song_time = -1
         if not coherence_score == 0:
-            song_time = sum_offset/coherence_score - len(hashs)/2
+            plt.figure().clear()
+            plt.hist(values)
+            plt.xlabel('weight')
+            plt.ylabel('count')
+            plt.savefig(f"foo{song_id}.png")
+            if song_id in [5,6]:
+                song_time = sum_offset/coherence_score - 2*len(hashs)
+            else:
+                song_time = sum_offset/coherence_score - len(hashs)/2
 
-        # print(temp_off)
+        
         top_song[song_id] = (coherence_score,song_time*0.0463)
 
     
@@ -217,10 +183,8 @@ def idk(request):
     for path in paths:
         print(path,".............")
         top_song = (find_song(path))
-        # top_song[song] =
 
         temp[path] = top_song
-        # print("top song" ,top_song)
 
     return render(request, 'temp.html',{"songs":temp})
 
@@ -243,7 +207,7 @@ def my_view(request):
             input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
             print("temp:",temp_input_path, "\ninp:",input_path)
 
-            context["song"] = find_song(temp_input_path)
+            context["song"] = find_song(temp_input_path,"file")
             # Clean up temp file
             # default_storage.delete(temp_input_path)
             print(context)
@@ -253,15 +217,8 @@ def my_view(request):
         else:
             message = 'The form is not valid. Fix the following error:'
     else:
-        form = DocumentForm()  # An empty, unbound form
-
-    # Load documents for the list page
-    # documents = Document.objects.all()
+        form = DocumentForm() 
     context['form'] = form
-
-    # Render list page with the documents and the form
-    # context["top_song"] = (find_song("song4_web_rec.wav"))
-    # top_song[song] =
 
     return render(request, 'index.html',context)
 
@@ -298,25 +255,6 @@ def find_peak_fq(audio_path):
 
     for time in range(Xdb_t.shape[0]):
         peak = find_pe(Xdb_t[time],8192,sr)
-        # # time =150
-        # peaks, _ = find_peaks(Xdb_t[time], prominence=1 ,width=1)
-        # # if time == 150:
-        # #     plt.figure(figsize=(14, 5))
-        # #     plt.plot(peaks, Xdb_t[time][peaks] , "ob")
-        # #     plt.plot(Xdb_t[time])
-        # #     plt.show()
-        # num_peaks = 6
-        # heights = [Xdb_t[time,i] for i in peaks]
-        # sorted_a = [peaks[i] for i in np.argsort(heights)]
-
-        # # librosa.display.specshow(Xdb, sr=sr, x_axis='time', y_axis='hz')
-
-        # heights = [Xdb_t[time,i] for i in peaks]
-        # sorted_a = [peaks[i] for i in np.argsort(heights)]
-
-        # if(len(sorted_a)>3):
-        #     sorted_a = sorted_a[-3:]
-
         all_peaks.append(peak)
 
     print("done")
@@ -336,9 +274,7 @@ def upload_audio(request):
 
         # DO PROCESSING 
         json_out = {'status': 'success'}
-        json_out["song"] = find_song(temp_input_path)
-        # Clean up temp file
-        # default_storage.delete(temp_input_path)
+        json_out["song"] = find_song(temp_input_path,"audio")
         print(json_out)
         default_storage.delete(input_path)
 
@@ -346,24 +282,3 @@ def upload_audio(request):
         # {'status': 'success', 'song': {'song_id': 0, 'song_file': './media/songs/song4.wav', 'singer': 'me', 'song_name': ' Force Projection | Cyberpunk 2077', 'link': 'bSpQpImpZbw', 'time': 54}}
         return JsonResponse(json_out) #SEND TO FRONTEND
     
-def find_with_file(request):
-    print("hi")
-    if request.method == 'POST' and request.FILES.get('audio'):
-        audio_file = request.FILES['audio']
-
-        # Save original webm
-        temp_input_path = default_storage.save('temp/temp_input.wav', audio_file)
-        input_path = os.path.join(settings.MEDIA_ROOT, temp_input_path)
-        print("temp:",temp_input_path, "\ninp:",input_path)
-
-        # DO PROCESSING 
-        json_out = {'status': 'success'}
-        json_out["song"] = find_song(temp_input_path)
-        # Clean up temp file
-        # default_storage.delete(temp_input_path)
-        print(json_out)
-        default_storage.delete(input_path)
-
-        # example output
-        # {'status': 'success', 'song': {'song_id': 0, 'song_file': './media/songs/song4.wav', 'singer': 'me', 'song_name': ' Force Projection | Cyberpunk 2077', 'link': 'bSpQpImpZbw', 'time': 54}}
-        return JsonResponse(json_out) #SEND TO FRONTEND

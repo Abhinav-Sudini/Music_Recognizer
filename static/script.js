@@ -102,10 +102,6 @@ const dataArray = new Uint8Array(bufferLength).fill(128);
 const dataArray2 = new Uint8Array(bufferLength);
 let FMArray = new Array(bufferLength).fill(0);
 let scaledDataArray2 = new Array(range).fill(0);
-const canvas = document.querySelector('#visualizer1');
-WIDTH = canvas.width;
-HEIGHT = canvas.height;
-const canvasCtx = canvas.getContext('2d');
 let drawVisual1, drawVisual2, drawVisual3, drawVisual4;
 const freqToIdx = (i) => Math.floor(i * (2 * bufferLength / sampleRate));
 const idxToFreq = (i) => Math.floor(i * (sampleRate / (2 * bufferLength)));
@@ -119,43 +115,48 @@ const logIdx = (i, n) => (bufferLength - logSpread * Math.exp(logScale * i) + lo
 // 	console.log(currAnalyser);
 // }, 3000);
 
+
+// const canvas = document.querySelector('#visualizer1');
+// WIDTH = canvas.width;
+// HEIGHT = canvas.height;
+// const canvasCtx = canvas.getContext('2d');
 function draw() {
 	drawVisual1 = requestAnimationFrame(draw);
 	//if (!currStream.paused || currStream.active)
 	currAnalyser.getByteTimeDomainData(dataArray);
-	canvasCtx.fillStyle = "rgb(200 200 200)";
-	canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-	canvasCtx.lineWidth = 2;
-	canvasCtx.strokeStyle = "rgb(0 0 0)";
-	canvasCtx.beginPath();
-	const sliceWidth = WIDTH / bufferLength;
-	let x = 0;
-	for (let i = 0; i < bufferLength; i++) {
-		const v = dataArray[i] / 128.0;
-		const y = v * (HEIGHT / 2);
+	// canvasCtx.fillStyle = "rgb(200 200 200)";
+	// canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+	// canvasCtx.lineWidth = 2;
+	// canvasCtx.strokeStyle = "rgb(0 0 0)";
+	// canvasCtx.beginPath();
+	// const sliceWidth = WIDTH / bufferLength;
+	// let x = 0;
+	// for (let i = 0; i < bufferLength; i++) {
+	// 	const v = dataArray[i] / 128.0;
+	// 	const y = v * (HEIGHT / 2);
 
-		if (i === 0) {
-			canvasCtx.moveTo(x, y);
-		} else {
-			canvasCtx.lineTo(x, y);
-		}
+	// 	if (i === 0) {
+	// 		canvasCtx.moveTo(x, y);
+	// 	} else {
+	// 		canvasCtx.lineTo(x, y);
+	// 	}
 
-		x += sliceWidth;
-	}
-	canvasCtx.lineTo(WIDTH, HEIGHT / 2);
-	canvasCtx.stroke();
+	// 	x += sliceWidth;
+	// }
+	// canvasCtx.lineTo(WIDTH, HEIGHT / 2);
+	// canvasCtx.stroke();
 }
 
-const canvas2 = document.querySelector('#visualizer2');
-WIDTH = canvas2.width;
-HEIGHT = canvas2.height;
-const canvasCtx2 = canvas2.getContext('2d');
+// const canvas2 = document.querySelector('#visualizer2');
+// WIDTH = canvas2.width;
+// HEIGHT = canvas2.height;
+// const canvasCtx2 = canvas2.getContext('2d');
 
-canvas2.addEventListener('click', () => {
-	console.log(dataArray2, scaledDataArray2, FMArray);
-	console.log(((Date.now()) / 500));
+// canvas2.addEventListener('click', () => {
+// 	console.log(dataArray2, scaledDataArray2, FMArray);
+// 	console.log(((Date.now()) / 500));
 
-})
+// })
 
 
 // for (let i = 0; i < range; i++) {
@@ -177,30 +178,16 @@ function draw2() {
 	currAnalyser.getByteFrequencyData(dataArray2);
 	FMArray = Array.from(dataArray2, (v, i) => (v + 0.0) * fletcherMunsonWeight(idxToFreq(i)));
 	//}
-	canvasCtx2.fillStyle = "rgb(200 200 200)";
-	canvasCtx2.fillRect(0, 0, WIDTH, HEIGHT);
-	canvasCtx2.lineWidth = 2;
-	canvasCtx2.strokeStyle = "rgb(0 0 0)";
-	canvasCtx2.beginPath();
+	// canvasCtx2.fillStyle = "rgb(200 200 200)";
+	// canvasCtx2.fillRect(0, 0, WIDTH, HEIGHT);
+	// canvasCtx2.lineWidth = 2;
+	// canvasCtx2.strokeStyle = "rgb(0 0 0)";
+	// canvasCtx2.beginPath();
 
-	const sliceWidth = WIDTH / (range);
-	let x = 0;
+	// const sliceWidth = WIDTH / (range);
+	// let x = 0;
 
 	for (let i = 0; i < range; i++) {
-		// const startFreq = Math.floor(Math.exp(logStep*i));
-		// const endtFreq = Math.floor(Math.exp(logStep*(i+1)));
-
-		// const startIdx = freqToIdx(startFreq);
-		// const endIdx = freqToIdx(endtFreq);
-
-		// let sum = 0;
-		// let count = 0;
-		// for (let j = startIdx; j < endIdx && j<bufferLength; j++) {
-		// 	sum += dataArray2[j];
-		// 	count++;
-		// }
-
-		// scaledDataArray2[i] = count ? sum / count : dataArray2[startFreq];
 		scaledDataArray2[i] = dataArray2[i];
 		scaledDataArray2[i] = scaledDataArray2[i] * Math.log10(i + 7) / Math.log10(range);
 		const e = 1.0;
@@ -208,34 +195,34 @@ function draw2() {
 		scaledDataArray2[i] = ((scaledDataArray2[i] / 256) ** e) * (2 + gain);
 
 
-		const y = HEIGHT - (scaledDataArray2[i] * (HEIGHT / 2)) + 1;
+		// const y = HEIGHT - (scaledDataArray2[i] * (HEIGHT / 2)) + 1;
 
-		if (i === 0) {
-			canvasCtx2.moveTo(x, y);
-		} else {
-			canvasCtx2.lineTo(x, y);
-		}
+		// if (i === 0) {
+		// 	canvasCtx2.moveTo(x, y);
+		// } else {
+		// 	canvasCtx2.lineTo(x, y);
+		// }
 
-		x += sliceWidth;
+		// x += sliceWidth;
 	}
-	x = 0;
-	canvasCtx2.lineTo(WIDTH, HEIGHT);
-	canvasCtx2.stroke();
-	canvasCtx2.strokeStyle = 'rgb(255,0,0)';
-	canvasCtx2.beginPath();
-	for (let i = 0; i < range; i++) {
-		const y = HEIGHT - (dataArray2[i] / 128.0 * (HEIGHT / 2)) + 1;
+	// x = 0;
+	// canvasCtx2.lineTo(WIDTH, HEIGHT);
+	// canvasCtx2.stroke();
+	// canvasCtx2.strokeStyle = 'rgb(255,0,0)';
+	// canvasCtx2.beginPath();
+	// for (let i = 0; i < range; i++) {
+	// 	const y = HEIGHT - (dataArray2[i] / 128.0 * (HEIGHT / 2)) + 1;
 
-		if (i === 0) {
-			canvasCtx2.moveTo(x, y);
-		} else {
-			canvasCtx2.lineTo(x, y);
-		}
+	// 	if (i === 0) {
+	// 		canvasCtx2.moveTo(x, y);
+	// 	} else {
+	// 		canvasCtx2.lineTo(x, y);
+	// 	}
 
-		x += sliceWidth;
-	}
-	canvasCtx2.lineTo(WIDTH, HEIGHT);
-	canvasCtx2.stroke();
+	// 	x += sliceWidth;
+	// }
+	// canvasCtx2.lineTo(WIDTH, HEIGHT);
+	// canvasCtx2.stroke();
 }
 
 
@@ -349,8 +336,7 @@ function draw2() {
 
 const canvas4 = document.querySelector('#visualizer4');
 const canvasCtx4 = canvas4.getContext('2d');
-const
-	WIDTH4 = canvas4.width;
+WIDTH4 = canvas4.width;
 HEIGHT4 = canvas4.width;
 
 function draw4() {
@@ -506,6 +492,37 @@ function draw4() {
 }
 
 
+async function fetchFromBackend(formData) {
+	fetch('/play/upload-audio/', {
+		method: 'POST',
+		body: formData
+	})
+		.then(res => res.json())
+		.then(data => {
+			console.log(data);
+
+			const iframe = document.querySelector("#song_iframe");
+			iframe.style.setProperty("display", "block");
+			iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
+
+			const song_details = document.querySelector('.song-details');
+			song_details.style.setProperty("display", "block");
+
+			const song_name = song_details.querySelector('#song-name');
+			const song_singer = song_details.querySelector('#song-singer');
+
+			song_name.innerHTML = data['song']['song_name'];
+			song_singer.innerHTML = data['song']['singer'];
+
+			iframe.scrollIntoView({behavior : "smooth"});
+
+			// console.log(song_details);
+			// console.log(song_name);
+			// console.log(song_singer);
+		})
+		.catch(err => console.error('Upload error:', err));
+}
+
 
 /*
 ███╗   ███╗██╗ ██████╗██████╗  ██████╗ ██████╗ ██╗  ██╗ ██████╗ ███╗   ██╗███████╗
@@ -558,7 +575,7 @@ recordBtn.addEventListener("click", async () => {
 		console.log("Recording Starts...");
 		console.log(isRecording);
 
-		recorder.onstop = () => {
+		recorder.onstop = async () => {
 			console.log("Recording onstop...");
 			recBlob = new Blob(audioChunk, { type: 'audio/wav' });
 			recUrl = URL.createObjectURL(recBlob);
@@ -569,32 +586,8 @@ recordBtn.addEventListener("click", async () => {
 			const filename = 'audio_recording.wav';
 			formData.append('audio', recBlob, filename);
 
-			fetch('/play/upload-audio/', {
-				method: 'POST',
-				body: formData
-			})
-				.then(res => res.json())
-				.then(data => {
-					console.log(data);
+			fetchFromBackend(formData);
 
-					const iframe = document.querySelector("#song_iframe");
-					iframe.style.setProperty("display", "block");
-					iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
-
-					const song_details = document.querySelector('.song-details');
-					song_details.style.setProperty("display", "block");
-
-					const song_name = song_details.querySelector('#song-name');
-					const song_singer = song_details.querySelector('#song-singer');
-
-					song_name.innerHTML = data['song']['song_name'];
-					song_singer.innerHTML = data['song']['singer'];
-
-					// console.log(song_details);
-					// console.log(song_name);
-					// console.log(song_singer);
-				})
-				.catch(err => console.error('Upload error:', err));
 
 			// Create a download link and remove this when django backend is working
 			// const a = document.createElement("a");
@@ -691,32 +684,7 @@ const startAudioCapture = async () => {
 		const filename = 'audio_recording.wav';
 		formData.append('audio', blob, filename);
 
-		fetch('/play/upload-audio/', {
-			method: 'POST',
-			body: formData
-		})
-			.then(res => res.json())
-			.then(data => {
-				console.log(data);
-
-				const iframe = document.querySelector("#song_iframe");
-				iframe.style.setProperty("display", "block");
-				iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
-
-				const song_details = document.querySelector('.song-details');
-				song_details.style.setProperty("display", "block");
-
-				const song_name = song_details.querySelector('#song-name');
-				const song_singer = song_details.querySelector('#song-singer');
-
-				song_name.innerHTML = data['song']['song_name'];
-				song_singer.innerHTML = data['song']['singer'];
-
-				// console.log(song_details);
-				// console.log(song_name);
-				// console.log(song_singer);
-			})
-			.catch(err => console.error('Upload error:', err));
+		fetchFromBackend(formData);
 
 
 		// Create a download link and remove this when django backend is working
@@ -810,32 +778,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const formData = new FormData();
 		formData.append("audio", audioFile, "recording.wav");
 
-		fetch('/play/upload-audio/', {
-			method: 'POST',
-			body: formData
-		})
-			.then(res => res.json())
-			.then(data => {
-				console.log(data);
-
-				const iframe = document.querySelector("#song_iframe");
-				iframe.style.setProperty("display", "block");
-				iframe.src = 'https://www.youtube.com/embed/' + data["song"]["link"] + '?amp;start=' + data["song"]["time"];
-
-				const song_details = document.querySelector('.song-details');
-				song_details.style.setProperty("display", "block");
-
-				const song_name = song_details.querySelector('#song-name');
-				const song_singer = song_details.querySelector('#song-singer');
-
-				song_name.innerHTML = data['song']['song_name'];
-				song_singer.innerHTML = data['song']['singer'];
-
-				// console.log(song_details);
-				// console.log(song_name);
-				// console.log(song_singer);
-			})
-			.catch(err => console.error('Upload error:', err));
+		fetchFromBackend(formData);
 	});
 });
 
