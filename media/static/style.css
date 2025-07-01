@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+:root {
+	--min-size: 10rem;
+	--ideal-size: 15vw;
+	--max-size: 30rem;
+
+	--bg-color: #222;
+	/* --gradient: linear-gradient(
+		45deg, #FF0000, #FF7300, #FFFB00, #48FF00,
+		#00FFD5, #002BFF, #FF00C8, #FF0000); */
+	--gradient: linear-gradient(45deg, #e74242, #002BFF, #FF00C8, #e74242);
+	--duaration: 10s;
+}
+
+
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-flow: column;
+	row-gap: 1rem;
+	min-height: 100dvh;
+	font-family: "Roboto", sans-serif;
+	background: var(--bg-color);
+}
+
+h1 {
+	background-color: #111;
+	color: #fff;
+	font-size: 3rem;
+	width: 100%;
+	text-align: center;
+	padding: 1rem;
+	overflow: hidden;
+}
+
+.visualContainer {
+	display: flex;
+	flex-flow: row;
+	justify-content: center;
+	align-items: center;
+	column-gap: 0.5rem;
+}
+
+.container {
+	width: 600px;
+	height: 600px;
+	position: relative;
+	overflow: hidden;
+}
+
+.bloom {
+	filter: blur(30px) brightness(1.5);
+	opacity: 0.7;
+}
+
+button {
+	border: none;
+}
+
+.button_main {
+	/* --size: clamp(var(--min-size), var(--ideal-size), var(--max-size)); */
+
+	position: absolute;
+	transform: translate(-50%, -50%);
+	left: 300px;
+	top: 300px;
+	width: var(--size);
+	height: var(--size);
+	border-radius: 50%;
+	background-color: rgb(23, 23, 23);
+	transition: all 0.01s, background-color 1s;
+	z-index: 1;
+}
+
+.button_main span {
+	position: relative;
+	color: #fff;
+	z-index: 1;
+}
+
+.button_main::before {
+	content: '';
+	position: absolute;
+	inset: 0px;
+	border-radius: 50%;
+	background: var(--gradient);
+	background-size: 600%;
+	animation: var(--duaration) linear infinite alternate glow;
+	opacity: 0;
+	transition: all 1s;
+	filter: blur(10px)
+}
+
+button:not(.button_main) {
+	position: relative;
+	width: 180px;
+	height: 50px;
+	border-radius: 100px;
+	background: #111;
+	color: #fff;
+	justify-content: center;
+	align-items: center;
+	font-weight: bolder;
+}
+
+button:not(.button_main)::after {
+	content: '';
+	display: var(--after-display);
+	position: absolute;
+	width: calc(100% + 10px);
+	height: calc(100% + 10px);
+	top: -5px;
+	left: -5px;
+	z-index: -1;
+	border-radius: inherit;
+	background: var(--gradient);
+	background-size: 300%;
+	filter: blur(5px) brightness(1.5);
+	animation: 3s linear infinite alternate glow;
+	opacity: 0;
+	transition: all 0.5s;
+}
+
+/* .button_main::after {
+	content: '';
+	position: absolute;
+	background: var(--gradient);
+	background-size: 600%;
+	inset: -5%;
+	border-radius: 50%;
+	z-index: -1;
+	
+	filter: blur(10px);
+	animation:  var(--duaration) linear infinite alternate glow;
+} */
+
+@keyframes glow {
+	0% {
+		background-position: 0 0;
+	}
+
+	100% {
+		background-position: 100% 0;
+	}
+
+	/* 100% {background-position: 0 0;} */
+}
+
+.button_main:hover::before {
+	opacity: 1;
+}
+
+.button_main:hover {
+	background-color: #fff;
+}
+
+button:not(.button_main):hover::after{
+	opacity: 1;
+}
+
+.button_main:hover span {
+	color: #000;
+	font-weight: bolder;
+}
+
+.test {
+	display: none;
+	background: var(--gradient);
+	/* background-size: 600%; */
+	width: 200px;
+	height: 200px;
+
+	/* animation: glow var(--duration) linear infinite; */
+}
+
+.song-details {
+	width: 40dvw;
+	color: #fff;
+	padding: 0.5em 1em;
+	border: #fff solid 2px;
+	border-radius: 10px;
+
+}
+
+.song-details > :first-child {
+	padding-top: 0.5rem;
+}
+
+.song-details > :last-child {
+	padding-bottom: 0.5rem;
+}
+
+.song-details > * + * {
+	padding-top: 1rem;
+}
+
+#song-name {
+	font-weight: bolder;
+	font-size: 1.2rem;
+}
+
+#song-singer {
+	font-size: 0.8rem;
+}
+
+form {
+	display: flex;
+	flex-flow: column nowrap;
+	align-items: center;
+	row-gap: 1rem;
+}
+
+.screen-record-container {
+	display: flex;
+	flex-flow: column wrap;
+	align-items: center;
+	row-gap: 1rem;
+}
+
+.drop-zone {
+    border: 2px dashed #aaa;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.drop-zone.dragover {
+    background-color: #f0f8ff;
+    border-color: #00aaff;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#file-name {
+    margin-top: 10px;
+    font-style: italic;
+    color: #fff;
+}
+
+#song_iframe {
+	padding: 1em 0;
+}

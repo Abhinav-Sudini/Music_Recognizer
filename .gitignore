@@ -1,5 +1,5 @@
 **/__pycache__
 **/migrations
-media/
+*.wav
 test.ipynb
-db*
+foo*

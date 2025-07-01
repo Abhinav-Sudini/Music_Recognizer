@@ -5,10 +5,9 @@ from django.conf import settings
 
 
 urlpatterns = [
-    path('hell/', views.say_hello),
-    path('view/',views.my_view , name='my-view'),
-    path('idk/',views.idk),
-    path('test/',views.test),
+    path('home/',views.home , name='my-view'),
+    path('test/',views.test_songs),
+    path('add_songs_db/', views.add_songs_db),
     path('upload-audio/', views.upload_audio)
 ]+ static(settings.STATIC_URL)
 
